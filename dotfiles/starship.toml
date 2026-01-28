@@ -1,0 +1,52 @@
+add_newline = false
+command_timeout = 2000
+
+# Left side: Directory + Prompt
+format = "$directory$character"
+
+# Right side: Git, environment info, execution time, and timestamp
+right_format = "$git_branch$git_status$nodejs$elixir$cmd_duration$time"
+
+[directory]
+truncation_length = 0
+truncation_symbol = "…/"
+home_symbol = "~"
+style = "blue"
+
+[git_branch]
+symbol = " "
+format = " [$symbol$branch]($style)"
+style = "bold purple"
+
+[git_status]
+format = "(\\[$all_status$ahead_behind\\]$style)"
+style = "bold yellow"
+conflicted = "⚠️"
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+untracked = "🆕"
+stashed = "📦"
+modified = "✏️"
+staged = "✔"
+renamed = "➡"
+deleted = "❌"
+
+[nodejs]
+format = " [📦 $version]($style)"
+style = "bold green"
+
+[elixir]
+format = " [💜 $version]($style)"
+style = "bold magenta"
+
+[cmd_duration]
+format = " ⏱ $duration"
+style = "yellow"
+show_milliseconds = true
+min_time = 0
+
+[time]
+format = " 🕒 [$time]($style)"
+style = "bold cyan"
+disabled = false
