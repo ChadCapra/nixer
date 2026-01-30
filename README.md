@@ -12,13 +12,14 @@ Choose your path based on the machine you are setting up.
 1.  **Boot & Install:** Boot the NixOS ISO and perform a standard installation.
 2.  **Clone & Switch:**
     ```bash
-    # Clone the repo
-    git clone [https://github.com/ChadCapra/nixer.git](https://github.com/ChadCapra/nixer.git) ~/nixer
-    
-    # Enter directory
+    git clone https://github.com/ChadCapra/nixer.git ~/nixer
+    ```
+
+    ```bash
     cd ~/nixer
+    ```
     
-    # Apply the System Configuration
+    ```bash
     sudo nixos-rebuild switch --flake ".#t14"
     ```
 
@@ -30,7 +31,7 @@ Choose your path based on the machine you are setting up.
 #### Step 1: Install Nix
 Open the terminal and run the standard installer in Daemon mode.
 
-```
+```bash
 sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
 
