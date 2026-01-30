@@ -5,12 +5,20 @@ $env.config.show_banner = false
 alias ll = ls -l
 alias gs = git status
 
-# A custom command that moves to the directory and builds
+# The "Smart" Rebuild
+# Automatically detects if we are on NixOS (T14) or Debian (Chromebook)
 def rebuild [] {
-    # 1. Use ~ safely to go to the folder
+    print "Rebuilding System..."
+    
+    # Go to the flake directory
     cd ~/nixer
-
-    # 2. Run the build (using . since we are now in the right spot)
-    # We quote ".#t14" to protect the # hash symbol
-    sudo nixos-rebuild switch --flake ".#t14"
+    
+    # Check if the special NixOS file exists
+    if ("/etc/NIXOS" | path exists) {
+        # T14 Mode
+        sudo nixos-rebuild switch --flake ".#t14"
+    } else {
+        # Chromebook Mode
+        home-manager switch --flake ".#penguin"
+    }
 }

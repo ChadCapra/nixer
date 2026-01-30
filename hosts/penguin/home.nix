@@ -1,6 +1,9 @@
 { pkgs, ... }:
 
 {
+  # Home Manager must be told to install itself :)
+  programs.home-manager.enable = true;
+
   # Import the Shared Suites
   imports = [
     ../../modules/suites/cli.nix
