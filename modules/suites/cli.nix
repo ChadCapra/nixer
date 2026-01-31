@@ -28,7 +28,9 @@
     tldr
     nodejs
     xsel # For neovim clipboard
-    nushell
+	entr # Trigger events based on file systems updates (and other?)
+	pandoc
+	devd
   ];
 
   # --- DOTFILE MANAGEMENT ---

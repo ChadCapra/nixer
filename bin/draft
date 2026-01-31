@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Default to README.md if no file specified
+FILE=${1:-README.md}
+
+# Create a temporary directory in memory (RAM)
+# This keeps your project folder clean (no garbage .html files)
+SITE=$(mktemp -d)
+
+# THE CLEANUP TRAP
+# When this script exits (for any reason), kill all background jobs
+# and delete the temporary directory.
+cleanup() {
+  echo "Cleaning up..."
+  rm -rf "$SITE"
+  kill 0 
+}
+trap cleanup EXIT
+
+echo "Drafting $FILE..."
+
+# 1. BUILD: Initial compile to the temp folder
+pandoc -s "$FILE" -o "$SITE/index.html"
+
+# 2. WATCH: Run pandoc whenever the source file changes
+echo "$FILE" | entr -n -p pandoc -s "$FILE" -o "$SITE/index.html" &
+
+# 3. SERVE: Start devd on the temp folder
+# -o: Open browser
+# -l: Live reload (refresh browser when index.html changes)
+# -q: Quiet mode
+devd -olq "$SITE" &
+
+# 4. EDIT: Open the file in Neovim
+# The script pauses here until you quit Vim.
+nvim "$FILE"

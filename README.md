@@ -68,10 +68,11 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
 
 #### Step 3: Enable Flakes
 Turn on the modern Nix command features.
-    ```bash
-    mkdir -p ~/.config/nix
-    echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-    ```
+
+ ```bash
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+```
 
 #### Step 4: Clone the Repo
 *If `git` is missing, we use Nix to install it temporarily.*
@@ -82,15 +83,16 @@ Turn on the modern Nix command features.
     ```
 2.  **Clone via HTTPS:** (We use HTTPS so you don't need SSH keys yet).
     ```bash
-    git clone [https://github.com/ChadCapra/nixer.git](https://github.com/ChadCapra/nixer.git) ~/nixer
+    git clone https://github.com/ChadCapra/nixer.git ~/nixer
     ```
 
 #### Step 5: Bootstrap the System
 This command downloads Home Manager and uses it to install itself and your entire configuration.
-    ```bash
-    cd ~/nixer
-    nix run home-manager/master -- switch --flake .#penguin
-    ```
+
+```bash
+cd ~/nixer
+nix run home-manager/master -- switch --flake .#penguin
+```
 
 ---
 
@@ -118,8 +120,11 @@ Now that your system is running, you should set up SSH keys so you can push chan
 This system uses a smart alias to handle updates on any machine.
 
 * **Update System:**
-    ```bash
-    rebuild
-    ```
-    *On T14: Automatically runs `nixos-rebuild`*
-    *On Chromebook: Automatically runs `home-manager switch`*
+
+```bash
+rebuild
+```
+
+*On T14: Automatically runs `nixos-rebuild`*
+
+*On Chromebook: Automatically runs `home-manager switch`*
