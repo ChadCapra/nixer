@@ -1,5 +1,5 @@
 {
-  description = "The Capra Unified System";
+  description = "The Nixer System";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

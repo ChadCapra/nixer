@@ -3,7 +3,7 @@
 {
   imports = [
     ./apps/git.nix
-    ./apps/nushell.nix  # The only place Nushell should be mentioned!
+    ./apps/nushell.nix
     ./apps/neovim.nix
     ./apps/starship.nix
     ./apps/tmux.nix

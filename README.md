@@ -1,4 +1,4 @@
-# The Capra Unified System
+# The Nixer System
 
 This repository manages the configuration for my entire digital life, unifying my ThinkPad T14 (NixOS) and my Chromebooks (Debian/Home Manager) into a single, synchronized system.
 
