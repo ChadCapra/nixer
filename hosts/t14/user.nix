@@ -4,8 +4,8 @@
   home-manager.users.capsc = {
     imports = [
       # Import the suites we just made
-      ../../modules/suites/cli.nix
-      ../../modules/suites/creative.nix
+      ../../modules/cli.nix
+      ../../modules/creative.nix
     ];
 
     home.stateVersion = "25.11";

@@ -6,8 +6,8 @@
 
   # Import the Shared Suites
   imports = [
-    ../../modules/suites/cli.nix
-    ../../modules/suites/creative.nix 
+    ../../modules/cli.nix
+    ../../modules/creative.nix 
   ];
 
   # Chromebook specific settings
