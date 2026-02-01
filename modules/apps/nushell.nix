@@ -11,11 +11,11 @@ let nxr = config.nixer; in
     # AND load your personal config on top of it.
     
     extraConfig = ''
-      source ${nxr.user.dotfiles}/config.nu
+      source ${nxr.user.dotfiles}/nushell/config.nu
     '';
 
     extraEnv = ''
-      source ${nxr.user.dotfiles}/env.nu
+      source ${nxr.user.dotfiles}/nushell/env.nu
     '';
   };
 
