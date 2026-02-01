@@ -1,5 +1,5 @@
-{ pkgs, config, lib, ... }: 
-
+{ config, pkgs, ... }: 
+let nxr = config.nixer; in
 {
   # 1. THE HYBRID ENGINE (The "Smart" Install)
   programs.neovim = {
@@ -7,22 +7,16 @@
     viAlias = true;
     vimAlias = true;
     withNodeJs = true;
+
+	extraPackages = with pkgs; [
+		xsel              # Clipboard
+		ripgrep           # Telescope grep
+		fd                # Telescope find
+		lua-language-server
+		nil               # Nix LSP
+	  ];
   };
 
-  # 2. THE DEPENDENCIES (The "Dumb" Install)
-  # Tools that Neovim specifically needs to function
-  home.packages = with pkgs; [
-    xsel              # Clipboard
-    ripgrep           # Telescope grep
-    fd                # Telescope find
-    lua-language-server
-    nil               # Nix LSP
-  ];
-
-  # 3. THE CONFIGURATION (The Symlink)
-  # This links ~/.config/nvim to your local repo
-  # Note: We adjust the path relative to THIS file
   xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink 
-    "${config.home.homeDirectory}/nixer/dotfiles/nvim";
-    
+    "${nxr.user.dotfiles}/nvim";
 }

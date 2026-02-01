@@ -1,13 +1,13 @@
 { config, pkgs, ... }:
-
+let nxr = config.nixer; in
 {
   # Install CLI programs
   programs.tmux = {
     enable = true;
   };
 
-  # Link Tmux
-  home.file.".tmux.conf".source = 
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixer/dotfiles/tmux.conf";
-
+  # UPGRADE: We are moving to ~/.config/tmux/tmux.conf
+  # Ensure your dotfiles folder has 'tmux/tmux.conf', NOT just 'tmux.conf'
+  xdg.configFile."tmux/tmux.conf".source = config.lib.file.mkOutOfStoreSymlink 
+    "${nxr.user.dotfiles}/tmux.conf";
 }

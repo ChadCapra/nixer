@@ -1,9 +1,5 @@
-{ pkgs, config, lib, ... }:
-
-let
-  # Define the path to your dotfiles explicitly
-  dotfiles = "${config.home.homeDirectory}/nixer/dotfiles/nushell";
-in
+{ config, pkgs, ... }:
+let nxr = config.nixer; in
 {
   # 1. The Module
   programs.nushell = {
@@ -15,11 +11,11 @@ in
     # AND load your personal config on top of it.
     
     extraConfig = ''
-      source ${dotfiles}/config.nu
+      source ${nxr.user.dotfiles}/config.nu
     '';
 
     extraEnv = ''
-      source ${dotfiles}/env.nu
+      source ${nxr.user.dotfiles}/env.nu
     '';
   };
 
@@ -27,7 +23,6 @@ in
   # These will now auto-inject their setup scripts into the generated config.nu
   # WITHOUT conflicting with your file.
   programs.carapace.enable = true;
-  programs.starship.enable = true;
   programs.zoxide.enable = true;
 
   # --- Shell Setup ---

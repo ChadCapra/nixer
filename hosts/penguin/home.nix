@@ -1,24 +1,22 @@
 { pkgs, ... }:
 
 {
-  # Home Manager must be told to install itself :)
-  programs.home-manager.enable = true;
-
-  # Import the Shared Suites
   imports = [
-    ../../modules/cli.nix
+    # 1. The Contract
+    ../../lib/options.nix
+
+    # 2. The Data (Manifest)
+    ../../users/chad.nix
+
+    # 3. The Logic (Profile)
+    ../../modules/core.nix
     ../../modules/creative.nix 
   ];
 
-  # Chromebook specific settings
+  programs.home-manager.enable = true;
+  
   home.username = "chadcapra";
   home.homeDirectory = "/home/chadcapra";
   home.stateVersion = "25.11";
-
-  # Pass variables to the suites (Fixes the git warnings too!)
-  programs.git.settings.user.name = "Chad Capra";
-  programs.git.settings.user.email = "chadcapra@gmail.com";
-  
-  # Allow non-free packages (if needed for chrome/codecs)
   nixpkgs.config.allowUnfree = true;
 }

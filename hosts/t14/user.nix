@@ -4,7 +4,7 @@
   home-manager.users.capsc = {
     imports = [
       # Import the suites we just made
-      ../../modules/cli.nix
+      ../../modules/core.nix
       ../../modules/creative.nix
     ];
 

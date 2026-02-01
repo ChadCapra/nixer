@@ -1,17 +1,25 @@
 { pkgs, ... }:
 
 {
-  # This is your "Core" suite.
-  # It contains tools that EVERY machine you own should have.
-  environment.systemPackages = with pkgs; [
-    git
-    vim
-    wget
-    curl
-    htop
-    # Add other "must haves" here
+  imports = [
+    ./apps/git.nix
+    ./apps/nushell.nix
+    ./apps/neovim.nix
+    ./apps/starship.nix
+    ./apps/tmux.nix
   ];
 
-  # Example: You can also enforce settings here
-  # programs.git.enable = true;
+  # System-wide packages that don't need dedicated modules
+  home.packages = with pkgs; [
+    bat
+    fzf
+    ripgrep
+    zoxide
+    tldr
+    nodejs
+    xsel
+    entr
+    pandoc
+    devd
+  ];
 }

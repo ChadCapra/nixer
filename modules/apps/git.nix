@@ -1,9 +1,12 @@
 { config, pkgs, ... }:
-
+let nxr = config.nixer; in
 {
-  # Install CLI programs
   programs.git = {
     enable = true;
+    
+	settings.user = {
+		name = nxr.user.name;
+    	email = nxr.user.email;
+	};
   };
-
 }
