@@ -23,7 +23,7 @@ Choose your path based on the machine you are setting up.
     *Since Flakes are not enabled by default, we must pass a special flag to enable them just for this first run. Your configuration will make it permanent afterwards.*
     ```bash
     cd ~/nixer
-    sudo nixos-rebuild switch --flake .#t14 --extra-experimental-features 'nix-command flakes'
+    sudo nixos-rebuild switch --flake .#t14 --option experimental-features 'nix-command flakes'
     ```
 
 ### Option B: Chromebook / Non-NixOS
