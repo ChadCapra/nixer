@@ -9,7 +9,6 @@
     [ # Include the results of the hardware scan.
       ./hardware.nix
       ./user.nix
-      ../../modules/suites/core.nix
     ];
 
   # Bootloader.

@@ -2,17 +2,18 @@
 
 {
   home-manager.users.capsc = {
-    imports = [
-      # Import the suites we just made
-      ../../modules/core.nix
-      ../../modules/creative.nix
-    ];
+	  imports = [
+		# 1. The Contract
+		../../lib/options.nix
+
+		# 2. The Data (Manifest)
+		../../users/chad.nix
+
+		# 3. The Logic (Profile)
+		../../modules/core.nix
+		../../modules/creative.nix 
+	  ];
 
     home.stateVersion = "25.11";
-    
-    # PASS VARIABLES TO SUITES
-    # This fixes the "userSettings" error from your old code
-    programs.git.settings.user.name = "Chad Capra";
-    programs.git.settings.user.email = "chadcapra@gmail.com";
   };
 }
