@@ -9,21 +9,22 @@ Choose your path based on the machine you are setting up.
 ### Option A: NixOS (ThinkPad T14)
 *For a fresh install on a dedicated Linux machine.*
 
-1.  **Boot & Install:** Boot the NixOS ISO and perform a standard installation.
-2.  **Clone & Switch:**
+1.  **Boot & Install:** Boot the NixOS ISO and perform a standard installation (graphic or minimal). I chose Plasma because it uses wayland and provides things out of the box like WiFi.
+2.  **Install Git:**
+    *Standard NixOS installs do not come with Git. We install it into the user environment temporarily.*
+    ```bash
+    nix-env -iA nixos.git
+    ```
+3.  **Clone the Repo:**
     ```bash
     git clone https://github.com/ChadCapra/nixer.git ~/nixer
     ```
-
+4.  **Bootstrap the System:**
+    *Since Flakes are not enabled by default, we must pass a special flag to enable them just for this first run. Your configuration will make it permanent afterwards.*
     ```bash
     cd ~/nixer
+    sudo nixos-rebuild switch --flake .#t14 --extra-experimental-features 'nix-command flakes'
     ```
-    
-    ```bash
-    sudo nixos-rebuild switch --flake ".#t14"
-    ```
-
----
 
 ### Option B: Chromebook / Non-NixOS
 *For setting up the 'penguin' container on ChromeOS.*
