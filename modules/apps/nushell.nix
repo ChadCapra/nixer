@@ -1,11 +1,5 @@
-{ config, lib, pkgs, ... }:
-
-let 
-  nxr = config.nixer;
-  # Check if we are running inside a full NixOS system.
-  # 'osConfig' is only present when Home Manager is a NixOS module.
-  isNixOS = config ? osConfig;
-in
+{ config, pkgs, ... }:
+let nxr = config.nixer; in
 {
   # 1. The Module
   programs.nushell = {
@@ -32,16 +26,12 @@ in
   programs.zoxide.enable = true;
 
   # --- Shell Setup ---
-  # Only apply the "Chromebook Hack" if we are NOT on NixOS.
-  # On NixOS, this breaks the login manager (causing blank screens).
-  home.sessionVariables = lib.mkIf (!isNixOS) {
-    SHELL = "${pkgs.nushell}/bin/nu";
-  };
-
-  home.file.".bash_profile" = lib.mkIf (!isNixOS) {
-    text = ''
-      export SHELL=${pkgs.nushell}/bin/nu
-      exec ${pkgs.nushell}/bin/nu
-    '';
-  };
+#  home.sessionVariables = {
+#    SHELL = "${pkgs.nushell}/bin/nu";
+#  };
+#
+#  home.file.".bash_profile".text = ''
+#    export SHELL=${pkgs.nushell}/bin/nu
+#    exec ${pkgs.nushell}/bin/nu
+#  '';
 }
