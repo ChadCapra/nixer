@@ -43,7 +43,7 @@ Select **Manual Partitioning** and create a **New Partition Table (GPT)**. Creat
 * Open a terminal.
 * Clone your Nix configuration repository (ensure `git` is installed or use `nix-shell -p git`):
   ```bash
-  git clone <your-repo-url> ~/nixer
+  git clone https://github.com/ChadCapra/nixer.git ~/nixer
   ```
 
 ### 7. Import Hardware Config
@@ -58,20 +58,20 @@ Open your new `hardware.nix` file. You will see hard-to-read UUIDs for your file
 
 **Find:**
 ```nix
-fileSystems."/boot" = { device = "/dev/disk/by-uuid/XXXX-XXXX"; ... };
 fileSystems."/" = { device = "/dev/disk/by-uuid/xxxxxxxx-xxxx..."; ... };
+fileSystems."/boot" = { device = "/dev/disk/by-uuid/XXXX-XXXX"; ... };
 ```
 
 **Replace with:**
 ```nix
-fileSystems."/boot" = {
-  device = "/dev/disk/by-label/BOOT";
-  fsType = "vfat";
-};
-
 fileSystems."/" = {
   device = "/dev/disk/by-label/nixos";
-  fsType = "ext4";
+  ...
+};
+
+fileSystems."/boot" = {
+  device = "/dev/disk/by-label/BOOT";
+  ...
 };
 ```
 
