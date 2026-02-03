@@ -87,10 +87,7 @@
     isNormalUser = true;
     description = "Caps C";
     extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-      kdePackages.kate
-    #  thunderbird
-    ];
+	shell = pkgs.bash;
   };
 
   # Install firefox.
