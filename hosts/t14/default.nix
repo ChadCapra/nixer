@@ -58,6 +58,7 @@
   services.xserver.xkb = {
     layout = "us";
     variant = "colemak";
+	options = "caps:escape,ctrl:swap_lalt_lctl";
   };
 
   # Enable CUPS to print documents.
