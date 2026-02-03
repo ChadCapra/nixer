@@ -34,14 +34,14 @@ in
   # --- Shell Setup ---
   # Only apply the "Chromebook Hack" if we are NOT on NixOS.
   # On NixOS, this breaks the login manager (causing blank screens).
-#  home.sessionVariables = lib.mkIf (!isNixOS) {
-#    SHELL = "${pkgs.nushell}/bin/nu";
-#  };
-#
-#  home.file.".bash_profile" = lib.mkIf (!isNixOS) {
-#    text = ''
-#      export SHELL=${pkgs.nushell}/bin/nu
-#      exec ${pkgs.nushell}/bin/nu
-#    '';
-#  };
+  home.sessionVariables = lib.mkIf (!isNixOS) {
+    SHELL = "${pkgs.nushell}/bin/nu";
+  };
+
+  home.file.".bash_profile" = lib.mkIf (!isNixOS) {
+    text = ''
+      export SHELL=${pkgs.nushell}/bin/nu
+      exec ${pkgs.nushell}/bin/nu
+    '';
+  };
 }
