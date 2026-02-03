@@ -6,25 +6,86 @@ This repository manages the configuration for my entire digital life, unifying m
 
 Choose your path based on the machine you are setting up.
 
-### Option A: NixOS (ThinkPad T14)
-*For a fresh install on a dedicated Linux machine.*
+# Option A: Fresh NixOS Installation ("Scorched Earth")
 
-1.  **Boot & Install:** Boot the NixOS ISO and perform a standard installation (graphic or minimal). I chose Plasma because it uses wayland and provides things out of the box like WiFi.
-2.  **Install Git:**
-    *Standard NixOS installs do not come with Git. We install it into the user environment temporarily.*
-    ```bash
-    nix-env -iA nixos.git
-    ```
-3.  **Clone the Repo:**
-    ```bash
-    git clone https://github.com/ChadCapra/nixer.git ~/nixer
-    ```
-4.  **Bootstrap the System:**
-    *Since Flakes are not enabled by default, we must pass a special flag to enable them just for this first run. Your configuration will make it permanent afterwards.*
-    ```bash
-    cd ~/nixer
-    sudo nixos-rebuild switch --flake .#t14 --option experimental-features 'nix-command flakes'
-    ```
+This guide outlines the steps for a complete wipe and fresh installation of NixOS, ensuring a clean partition table and human-readable filesystem labels.
+
+### 1. Prepare Boot Media
+* Flash a USB drive with the latest NixOS ISO.
+* **BIOS Settings:** Ensure "Secure Boot" is disabled in your BIOS/UEFI settings before proceeding.
+
+### 2. Launch Installer
+* Boot from the USB drive.
+* Connect to Wi-Fi/Ethernet.
+* Launch the **NixOS Installer** from the desktop.
+
+### 3. Configure Basics
+* Follow the wizard for Language, Region, Keyboard, and User setup.
+* **Stop** when you reach the **Partitions** screen.
+
+### 4. Manual Partitioning
+Select **Manual Partitioning** and create a **New Partition Table (GPT)**. Create the following two partitions exactly as described:
+
+| Partition | Size | File System | Label | Mount Point | Flags |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Boot** | `1024 MiB` | `FAT32` | `BOOT` | `/boot` | `boot`, `esp` |
+| **Root** | (Remainder) | `ext4` | `nixos` | `/` | *(none)* |
+
+> **Note:** Setting the "Label" in the installer saves you from doing it manually in the terminal later.
+
+### 5. Install & Restart
+* Complete the wizard and let the installation finish.
+* **Remove the USB drive** when prompted.
+* Restart the machine.
+
+### 6. Login & Setup
+* Log in to your fresh NixOS installation.
+* Open a terminal.
+* Clone your Nix configuration repository (ensure `git` is installed or use `nix-shell -p git`):
+  ```bash
+  git clone <your-repo-url> ~/nixer
+  ```
+
+### 7. Import Hardware Config
+Copy the auto-generated hardware configuration into your repository (replacing the placeholder):
+
+```bash
+cp /etc/nixos/hardware-configuration.nix ~/nixer/hosts/t14/hardware.nix
+```
+
+### 8. Update to File System Labels
+Open your new `hardware.nix` file. You will see hard-to-read UUIDs for your file systems. Replace them with the labels you created in Step 4.
+
+**Find:**
+```nix
+fileSystems."/boot" = { device = "/dev/disk/by-uuid/XXXX-XXXX"; ... };
+fileSystems."/" = { device = "/dev/disk/by-uuid/xxxxxxxx-xxxx..."; ... };
+```
+
+**Replace with:**
+```nix
+fileSystems."/boot" = {
+  device = "/dev/disk/by-label/BOOT";
+  fsType = "vfat";
+};
+
+fileSystems."/" = {
+  device = "/dev/disk/by-label/nixos";
+  fsType = "ext4";
+};
+```
+
+### 9. Rebuild System
+Apply your flake configuration to finalize the setup:
+
+```bash
+# Navigate to your flake directory
+cd ~/nixer
+
+# Rebuild (replace 't14' with your actual hostname)
+sudo nixos-rebuild switch --flake .#t14
+```
+
 
 ### Option B: Chromebook / Non-NixOS
 *For setting up the 'penguin' container on ChromeOS.*
