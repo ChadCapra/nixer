@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./apps/direnv.nix
     ./apps/git.nix
     ./apps/nushell.nix
     ./apps/neovim.nix
@@ -14,10 +15,12 @@
     bat
     fzf
     ripgrep
+	fd
     zoxide
     tldr
     nodejs
-    xsel
+    xsel    #may be needed on chromebook still, but figure out this later
+	wl-clipboard
     entr
     pandoc
     devd

@@ -9,9 +9,6 @@ let nxr = config.nixer; in
     withNodeJs = true;
 
 	extraPackages = with pkgs; [
-		xsel              # Clipboard
-		ripgrep           # Telescope grep
-		fd                # Telescope find
 		lua-language-server
 		nil               # Nix LSP
 	  ];
