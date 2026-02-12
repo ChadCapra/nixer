@@ -22,3 +22,8 @@ def rebuild [] {
         home-manager switch --flake ".#penguin"
     }
 }
+
+ # Auto-launch Sessionizer if not already in Tmux
+if ($env.TMUX? | is-empty) {
+    sessionizer
+} 
