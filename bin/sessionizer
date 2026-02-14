@@ -42,6 +42,26 @@ if ! tmux has-session -t="$NAME" 2> /dev/null; then
             tmux split-window -v -l 20% -c "$SESSION_NAME"
             tmux select-pane -t 0
             ;;
+
+		 "protocol-zero" | "speakless")
+            tmux rename-window -t "$NAME:1" "editor"
+            tmux send-keys -t "$NAME:1" "nvim" C-m
+
+            # Window 2: Core (Backend)
+            tmux new-window -t "$NAME" -n "core" -c "$SESSION_NAME/core"
+            # Auto-start server after direnv loads
+            tmux send-keys -t "$NAME:2" "sleep 1 && just server" C-m
+
+            # Window 3: UI (Frontend)
+            tmux new-window -t "$NAME" -n "ui" -c "$SESSION_NAME/ui"
+            tmux send-keys -t "$NAME:3" "sleep 1 && just dev" C-m
+
+            # Window 4: Database
+            tmux new-window -t "$NAME" -n "db" -c "$SESSION_NAME/core"
+            tmux send-keys -t "$NAME:4" "sleep 1 && just db" C-m
+
+            tmux select-window -t "$NAME:1"
+            ;;
             
         *)
             tmux rename-window -t "$NAME:1" "editor"
