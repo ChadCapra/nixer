@@ -2,7 +2,6 @@
 
 # Usage: ide <name_or_path>
 # Example: ide speakless       -> resolves to ~/dev/speakless
-# Example: ide ~/nixer         -> resolves to ~/nixer
 # Example: ide .               -> resolves to current dir
 
 TARGET=$1
@@ -13,26 +12,18 @@ if [ -z "$TARGET" ]; then
 fi
 
 # 1. RESOLVE PATH LOGIC
-# Case A: User provided a valid path (e.g. ".", "~/nixer", "/tmp/foo")
 if [ -d "$TARGET" ]; then
-    # Convert to absolute path
     PROJECT_PATH=$(cd "$TARGET" && pwd)
-
-# Case B: User provided just a name (e.g. "speakless") -> Check ~/dev
 elif [ -d "$HOME/dev/$TARGET" ]; then
     PROJECT_PATH="$HOME/dev/$TARGET"
-
 else
     echo "❌ Project not found: $TARGET"
-    echo "   Checked: $TARGET"
-    echo "   Checked: ~/dev/$TARGET"
     exit 1
 fi
 
-# Clean name: /home/chad/dev/speakless -> speakless
 PROJECT_NAME=$(basename "$PROJECT_PATH" | tr . _)
 
-# 2. SESSION CHECK (Attach if exists)
+# 2. SESSION CHECK
 if tmux has-session -t "$PROJECT_NAME" 2>/dev/null; then
     if [ -n "$TMUX" ]; then
         tmux switch-client -t "$PROJECT_NAME"
@@ -42,43 +33,46 @@ if tmux has-session -t "$PROJECT_NAME" 2>/dev/null; then
     exit 0
 fi
 
-# 3. CREATE SESSION (Detached)
+# 3. CREATE SESSION
 tmux new-session -d -s "$PROJECT_NAME" -c "$PROJECT_PATH"
 
 # 4. SETUP LAYOUT
-# Check for Protocol Zero Structure (Core + UI)
 if [ -d "$PROJECT_PATH/core" ] && [ -d "$PROJECT_PATH/ui" ]; then
     
     # WINDOW 1: EDITOR
     tmux rename-window -t "$PROJECT_NAME:1" "code"
     tmux send-keys -t "$PROJECT_NAME:1" "nvim ." C-m
 
-    # WINDOW 2: SERVICES (The Protocol Zero Cockpit)
+    # WINDOW 2: SERVICES
+    # We use 'direnv exec . just ...' to force environment loading immediately
+    # independent of shell hooks.
     tmux new-window -t "$PROJECT_NAME:2" -n "services" -c "$PROJECT_PATH"
     
-    # Split Pane 1 (Left): Core
-    tmux send-keys -t "$PROJECT_NAME:2" "cd core && direnv allow && just dev" C-m
+    # Left: Core Server
+    # We cd, allow (just in case), and then execute just WITH the environment loaded.
+    tmux send-keys -t "$PROJECT_NAME:2" "cd core; direnv allow; direnv exec . just dev" C-m
     
-    # Split Pane 2 (Right Top): UI
+    # Top Right: UI Server
     tmux split-window -h -t "$PROJECT_NAME:2" -c "$PROJECT_PATH"
-    tmux send-keys -t "$PROJECT_NAME:2.2" "cd ui && direnv allow && just dev" C-m
+    tmux send-keys -t "$PROJECT_NAME:2.2" "cd ui; direnv allow; direnv exec . just dev" C-m
     
-    # Split Pane 3 (Right Bottom): Database
+    # Bottom Right: Database
     tmux split-window -v -t "$PROJECT_NAME:2.2" -c "$PROJECT_PATH"
-    tmux send-keys -t "$PROJECT_NAME:2.3" "cd core && direnv allow && just db" C-m
+    tmux send-keys -t "$PROJECT_NAME:2.3" "cd core; direnv allow; direnv exec . just db" C-m
 
-    # WINDOW 3: SHELL (Git/Ops)
+    # WINDOW 3: SHELL
     tmux new-window -t "$PROJECT_NAME:3" -n "shell" -c "$PROJECT_PATH"
 
-    # WINDOW 4: CONSOLE (IEx/DB Access)
+    # WINDOW 4: CONSOLE
+    # This runs an interactive Elixir shell connected to your app.
+    # It allows you to inspect live data, run database queries manually, or debug code.
     tmux new-window -t "$PROJECT_NAME:4" -n "console" -c "$PROJECT_PATH/core"
-    tmux send-keys -t "$PROJECT_NAME:4" "iex -S mix" C-m
+    tmux send-keys -t "$PROJECT_NAME:4" "direnv allow; direnv exec . iex -S mix" C-m
 
 else
     # GENERIC PROJECT
     tmux rename-window -t "$PROJECT_NAME:1" "editor"
     tmux send-keys -t "$PROJECT_NAME:1" "nvim ." C-m
-    
     tmux new-window -t "$PROJECT_NAME:2" -n "shell" -c "$PROJECT_PATH"
 fi
 
