@@ -25,5 +25,5 @@ def rebuild [] {
 
  # Auto-launch Sessionizer if not already in Tmux
 if ($env.TMUX? | is-empty) {
-    sessionizer
+    home
 } 

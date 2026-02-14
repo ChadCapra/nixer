@@ -1,19 +1,38 @@
 #!/usr/bin/env bash
 
-# Usage: ide <project_path>
-# Example: ide ~/dev/speakless
+# Usage: ide <name_or_path>
+# Example: ide speakless       -> resolves to ~/dev/speakless
+# Example: ide ~/nixer         -> resolves to ~/nixer
+# Example: ide .               -> resolves to current dir
 
-PROJECT_PATH=$1
+TARGET=$1
 
-if [ -z "$PROJECT_PATH" ]; then
-    echo "Usage: ide <project_path>"
+if [ -z "$TARGET" ]; then
+    echo "Usage: ide <project_name_or_path>"
+    exit 1
+fi
+
+# 1. RESOLVE PATH LOGIC
+# Case A: User provided a valid path (e.g. ".", "~/nixer", "/tmp/foo")
+if [ -d "$TARGET" ]; then
+    # Convert to absolute path
+    PROJECT_PATH=$(cd "$TARGET" && pwd)
+
+# Case B: User provided just a name (e.g. "speakless") -> Check ~/dev
+elif [ -d "$HOME/dev/$TARGET" ]; then
+    PROJECT_PATH="$HOME/dev/$TARGET"
+
+else
+    echo "❌ Project not found: $TARGET"
+    echo "   Checked: $TARGET"
+    echo "   Checked: ~/dev/$TARGET"
     exit 1
 fi
 
 # Clean name: /home/chad/dev/speakless -> speakless
 PROJECT_NAME=$(basename "$PROJECT_PATH" | tr . _)
 
-# 1. If session exists, attach and exit
+# 2. SESSION CHECK (Attach if exists)
 if tmux has-session -t "$PROJECT_NAME" 2>/dev/null; then
     if [ -n "$TMUX" ]; then
         tmux switch-client -t "$PROJECT_NAME"
@@ -23,10 +42,10 @@ if tmux has-session -t "$PROJECT_NAME" 2>/dev/null; then
     exit 0
 fi
 
-# 2. Create Session (Detached)
+# 3. CREATE SESSION (Detached)
 tmux new-session -d -s "$PROJECT_NAME" -c "$PROJECT_PATH"
 
-# 3. Setup Layout
+# 4. SETUP LAYOUT
 # Check for Protocol Zero Structure (Core + UI)
 if [ -d "$PROJECT_PATH/core" ] && [ -d "$PROJECT_PATH/ui" ]; then
     
@@ -63,7 +82,7 @@ else
     tmux new-window -t "$PROJECT_NAME:2" -n "shell" -c "$PROJECT_PATH"
 fi
 
-# 4. Attach
+# 5. ATTACH
 tmux select-window -t "$PROJECT_NAME:1"
 if [ -n "$TMUX" ]; then
     tmux switch-client -t "$PROJECT_NAME"

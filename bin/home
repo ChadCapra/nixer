@@ -1,24 +1,29 @@
 #!/usr/bin/env bash
 
-SESSION="home"
-
-# If session exists, attach
-if tmux has-session -t "$SESSION" 2>/dev/null; then
-    if [ -n "$TMUX" ]; then
-        tmux switch-client -t "$SESSION"
-    else
-        tmux attach -t "$SESSION"
-    fi
-    exit 0
+# 1. Boot 'nixer' (The Config Session) - BACKGROUND
+# We check if it exists; if not, we create it but DO NOT attach.
+if ! tmux has-session -t nixer 2>/dev/null; then
+    # Create detached session in ~/nixer
+    tmux new-session -d -s nixer -c ~/nixer
+    
+    # Window 1: Editor
+    tmux rename-window -t nixer:1 "config"
+    tmux send-keys -t nixer:1 "nvim ." C-m
+    
+    # Window 2: Rebuild (Shell)
+    tmux new-window -t nixer:2 -n "rebuild" -c ~/nixer
 fi
 
-# Create Hub Session
-tmux new-session -d -s "$SESSION" -c "$HOME/dev"
-tmux rename-window -t "$SESSION:1" "terminal"
+# 2. Boot 'home' (The Daily Driver) - FOREGROUND
+# This is where you land.
+if ! tmux has-session -t home 2>/dev/null; then
+    tmux new-session -d -s home -c ~
+    tmux rename-window -t home:1 "terminal"
+fi
 
-# Window 2: Nixer Config (Quick access to dotfiles)
-tmux new-window -t "$SESSION:2" -n "nixer" -c "$HOME/nixer"
-tmux send-keys -t "$SESSION:2" "nvim ." C-m
-
-tmux select-window -t "$SESSION:1"
-tmux attach -t "$SESSION"
+# 3. Attach to Home
+if [ -z "$TMUX" ]; then
+    tmux attach -t home
+else
+    tmux switch-client -t home
+fi
