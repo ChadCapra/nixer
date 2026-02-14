@@ -24,5 +24,6 @@
     entr
     pandoc
     devd
+	just
   ];
 }

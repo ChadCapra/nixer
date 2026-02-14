@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+SESSION="home"
+
+# If session exists, attach
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+    if [ -n "$TMUX" ]; then
+        tmux switch-client -t "$SESSION"
+    else
+        tmux attach -t "$SESSION"
+    fi
+    exit 0
+fi
+
+# Create Hub Session
+tmux new-session -d -s "$SESSION" -c "$HOME/dev"
+tmux rename-window -t "$SESSION:1" "terminal"
+
+# Window 2: Nixer Config (Quick access to dotfiles)
+tmux new-window -t "$SESSION:2" -n "nixer" -c "$HOME/nixer"
+tmux send-keys -t "$SESSION:2" "nvim ." C-m
+
+tmux select-window -t "$SESSION:1"
+tmux attach -t "$SESSION"

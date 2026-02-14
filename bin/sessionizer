@@ -1,80 +1,17 @@
 #!/usr/bin/env bash
 
 # 1. Select the Project
-SESSION_NAME=$1
-if [[ -z "$SESSION_NAME" ]]; then
-    # "Launcher Mode"
-    # Logic:
-    # 1. Find all subdirectories inside ~/dev (your projects)
-    # 2. Manually echo ~/nixer (your config) so it appears as one solid entry
-    # 3. Pipe everything to fzf
-    SESSION_NAME=$({ find ~/dev -mindepth 1 -maxdepth 1 -type d 2>/dev/null; echo "$HOME/nixer"; } | fzf --header "Select a Tmux Session (Ctrl-C to Cancel)")
+# If argument provided, use it. Otherwise, search ~/dev and ~/nixer config
+if [[ $# -eq 1 ]]; then
+    SELECTED=$1
+else
+    SELECTED=$(find ~/dev -mindepth 1 -maxdepth 1 -type d 2>/dev/null; echo "$HOME/nixer")
+    SELECTED=$(echo "$SELECTED" | fzf --header "Select Project (Ctrl-C to Cancel)")
 fi
 
-if [[ -z "$SESSION_NAME" ]]; then
+if [[ -z "$SELECTED" ]]; then
     exit 0
 fi
 
-# Clean up the name (path -> name)
-# e.g. /home/capsc/nixer -> nixer
-# e.g. /home/capsc/dev/svg_dsl -> svg_dsl
-NAME=$(basename "$SESSION_NAME" | tr . _)
-
-# 2. Create Session (If it doesn't exist)
-if ! tmux has-session -t="$NAME" 2> /dev/null; then
-    tmux new-session -ds "$NAME" -c "$SESSION_NAME"
-    
-    # ----------------------------------------------------------
-    # 3. LAYOUT DEFINITIONS
-    # ----------------------------------------------------------
-    case "$NAME" in
-        "nixer")
-            tmux rename-window -t "$NAME:1" "editor"
-            tmux send-keys -t "$NAME:1" "nvim" C-m
-            tmux new-window -t "$NAME" -n "system" -c "$SESSION_NAME"
-            tmux select-window -t "$NAME:1"
-            ;;
-        
-        "svg_dsl") 
-            # Note: 'svg_dsl' must match the folder name (underscores vs hyphens matter!)
-            tmux rename-window -t "$NAME:1" "dev"
-            tmux send-keys -t "$NAME:1" "nvim" C-m
-            tmux split-window -v -l 20% -c "$SESSION_NAME"
-            tmux select-pane -t 0
-            ;;
-
-		 "protocol-zero" | "speakless")
-            tmux rename-window -t "$NAME:1" "editor"
-            tmux send-keys -t "$NAME:1" "nvim" C-m
-
-            # Window 2: Core (Backend)
-            tmux new-window -t "$NAME" -n "core" -c "$SESSION_NAME/core"
-            # Auto-start server after direnv loads
-            tmux send-keys -t "$NAME:2" "sleep 1 && just server" C-m
-
-            # Window 3: UI (Frontend)
-            tmux new-window -t "$NAME" -n "ui" -c "$SESSION_NAME/ui"
-            tmux send-keys -t "$NAME:3" "sleep 1 && just dev" C-m
-
-            # Window 4: Database
-            tmux new-window -t "$NAME" -n "db" -c "$SESSION_NAME/core"
-            tmux send-keys -t "$NAME:4" "sleep 1 && just db" C-m
-
-            tmux select-window -t "$NAME:1"
-            ;;
-            
-        *)
-            tmux rename-window -t "$NAME:1" "editor"
-            tmux send-keys -t "$NAME:1" "nvim" C-m
-            tmux new-window -t "$NAME" -n "shell" -c "$SESSION_NAME"
-            tmux select-window -t "$NAME:1"
-            ;;
-    esac
-fi
-
-# 4. Attach
-if [[ -n "$TMUX" ]]; then
-    tmux switch-client -t "$NAME"
-else
-    tmux attach-session -t "$NAME"
-fi
+# 2. Hand off to the Engine
+ide "$SELECTED"
