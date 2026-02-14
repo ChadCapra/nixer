@@ -45,15 +45,15 @@ if [ -d "$PROJECT_PATH/core" ] && [ -d "$PROJECT_PATH/ui" ]; then
 
     # WINDOW 2: SERVICES
     # We use 'direnv exec' to force environment loading.
-    # We inject ELIXIR_ERL_OPTIONS to give the server a name ('backend') so we can connect to it later.
+    # We now chain 'just setup; just proto; just dev' so fresh clones work instantly.
     tmux new-window -t "$PROJECT_NAME:2" -n "services" -c "$PROJECT_PATH"
     
     # Left: Core Server (Named 'backend')
-    tmux send-keys -t "$PROJECT_NAME:2" "cd core; direnv allow; \$env.ELIXIR_ERL_OPTIONS = '-sname backend'; direnv exec . just dev" C-m
+    tmux send-keys -t "$PROJECT_NAME:2" "cd core; direnv allow; \$env.ELIXIR_ERL_OPTIONS = '-sname backend'; direnv exec . just setup; direnv exec . just proto; direnv exec . just dev" C-m
     
     # Top Right: UI Server
     tmux split-window -h -t "$PROJECT_NAME:2" -c "$PROJECT_PATH"
-    tmux send-keys -t "$PROJECT_NAME:2.2" "cd ui; direnv allow; direnv exec . just dev" C-m
+    tmux send-keys -t "$PROJECT_NAME:2.2" "cd ui; direnv allow; direnv exec . just setup; direnv exec . just proto; direnv exec . just dev" C-m
     
     # Bottom Right: Database
     tmux split-window -v -t "$PROJECT_NAME:2.2" -c "$PROJECT_PATH"
@@ -63,8 +63,6 @@ if [ -d "$PROJECT_PATH/core" ] && [ -d "$PROJECT_PATH/ui" ]; then
     tmux new-window -t "$PROJECT_NAME:3" -n "shell" -c "$PROJECT_PATH"
 
     # WINDOW 4: CONSOLE (Remote Connection)
-    # Instead of starting a new app, we connect to the 'backend' node running in Window 2.
-    # We use $(hostname) because sname binds to name@hostname.
     tmux new-window -t "$PROJECT_NAME:4" -n "console" -c "$PROJECT_PATH/core"
     tmux send-keys -t "$PROJECT_NAME:4" "direnv allow; direnv exec . iex --sname console --remsh backend@(hostname) --hidden" C-m
 
