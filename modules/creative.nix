@@ -4,6 +4,7 @@
 
 	home.packages = with pkgs; [
 		# firefox
+		google-chrome
 		inkscape
 		audacity
 		ffmpeg-full

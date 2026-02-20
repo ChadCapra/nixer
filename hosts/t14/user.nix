@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
 {
+  # Tell Home Manager to use the system's pkgs (inheriting allowUnfree = true)
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
+
   home-manager.users.capsc = {
 	  imports = [
 		# 1. The Contract
