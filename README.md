@@ -153,14 +153,14 @@ nix store info --store https://cache.nixos.org
 
 #### Step 4: Clone the Repo
 
-Check if `git` is installed
+Clone via HTTPS: (We use HTTPS so you don't need SSH keys yet).
 
 ```bash
-git -v
+git clone https://github.com/ChadCapra/nixer.git ~/nixer
 ```
 
 <details>
-<summary>**⚠️ Command Not Found**</summary>
+<summary>**⚠️ If: Command Not Found**</summary>
 
     Install git using nix-env.
 
@@ -168,11 +168,6 @@ git -v
     nix-env -iA nixpkgs.git
     ```
 </details>
-
-**Clone via HTTPS:** (We use HTTPS so you don't need SSH keys yet).
-```bash
-git clone https://github.com/ChadCapra/nixer.git ~/nixer
-```
 
 #### Step 5: Bootstrap the System
 This command downloads Home Manager and uses it to install itself and your entire configuration.
