@@ -160,7 +160,7 @@ git -v
 ```
 
 <details>
-<summary>**If `git: command not found`, use nix-env**</summary>
+<summary>**⚠️ Command Not Found**</summary>
 
     Install git using nix-env.
 
