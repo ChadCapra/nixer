@@ -15,11 +15,11 @@ def rebuild [] {
     
     # Check if the special NixOS file exists
     if ("/etc/NIXOS" | path exists) {
-        # T14 Mode
-        sudo nixos-rebuild switch --flake ".#t14"
+        # NixOS targets are just the hostname
+        sudo nixos-rebuild switch --flake $".#(sys host | get hostname)"
     } else {
-        # Chromebook Mode
-        home-manager switch --flake ".#penguin"
+        # Home Manager targets are user@hostname
+        home-manager switch --flake $".#(whoami)@(sys host | get hostname)"
     }
 }
 

@@ -3,5 +3,6 @@
   imports = [
     ../../hardware/amd-amdgpu-x86_64.nix
     ../../os/nixos-core.nix
+    ../../os/desktops/plasma.nix
   ];
 }

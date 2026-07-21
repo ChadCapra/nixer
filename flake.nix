@@ -56,6 +56,10 @@
               home.username = d.identity.username;
               home.homeDirectory = "/home/${d.identity.username}";
               home.stateVersion = "25.11";
+
+              # THE BRIDGE: Pass the pure data into the module options
+              nixer.user.name = d.identity.name;
+              nixer.user.email = d.identity.email;
             }) auth;
           })
         ];
@@ -68,7 +72,7 @@
     # This creates targets like "chadcapra@CCAP-CB-RMT-001" dynamically.
     homeConfigurations = 
       let
-        # Build a flat list of { target = "user@host"; config = {...}; }
+        # Build a flat list of { name = "user@host"; value = {...}; }
         allConfigs = lib.flatten (map (hostName: 
           let 
             auth = import ./lib/get-authorized-users.nix { inherit lib hostName; };
@@ -87,6 +91,10 @@
                   home.username = userData.identity.username;
                   home.homeDirectory = "/home/${userData.identity.username}";
                   home.stateVersion = "25.11";
+
+                  # THE BRIDGE: Pass the pure data into the module options
+                  nixer.user.name = userData.identity.name;
+                  nixer.user.email = userData.identity.email;
                 })
               ];
             };
