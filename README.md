@@ -121,6 +121,7 @@ nix store info --store https://cache.nixos.org
 
 <details>
 <summary>⚠️ Troubleshooting: Fix SSL Certificates (Legacy Containers)</summary>
+
 *Older ChromeOS containers have SSL paths that the isolated Nix Daemon cannot see. We must manually map the certificate bundle.*
 
 1.  **Install Certificates:** Download the cert bundle into your user profile.
@@ -151,16 +152,27 @@ nix store info --store https://cache.nixos.org
 </details>
 
 #### Step 4: Clone the Repo
-*If `git` is missing, we use Nix to install it temporarily.*
 
-1.  **Ensure Git is installed:**
+Check if `git` is installed
+
+```bash
+git -v
+```
+
+<details>
+<summary>**If `git: command not found`, use nix-env**</summary>
+
+    Install git using nix-env.
+
     ```bash
     nix-env -iA nixpkgs.git
     ```
-2.  **Clone via HTTPS:** (We use HTTPS so you don't need SSH keys yet).
-    ```bash
-    git clone https://github.com/ChadCapra/nixer.git ~/nixer
-    ```
+</details>
+
+**Clone via HTTPS:** (We use HTTPS so you don't need SSH keys yet).
+```bash
+git clone https://github.com/ChadCapra/nixer.git ~/nixer
+```
 
 #### Step 5: Bootstrap the System
 This command downloads Home Manager and uses it to install itself and your entire configuration.
