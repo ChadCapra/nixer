@@ -161,13 +161,12 @@ git -v
 <details>
 <summary>**⚠️ If: git: command not found**</summary>
 
-1.  Install git using nix-env.
+Install git using nix-env.
 
-    ```bash
-    nix-env -iA nixpkgs.git
-    ```
+```bash
+nix-env -iA nixpkgs.git
+```
 
-2.  Proceed to next step.
 </details>
 
 Clone via HTTPS: (We use HTTPS so you don't need SSH keys yet).
