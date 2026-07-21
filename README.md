@@ -161,11 +161,11 @@ git -v
 <details>
 <summary>**⚠️ If: git: command not found**</summary>
 
-Install git using nix-env.
-
-```bash
-nix-env -iA nixpkgs.git
-```
+>*Install git using nix-env.*
+>
+> ```bash
+>nix-env -iA nixpkgs.git
+>```
 
 </details>
 
