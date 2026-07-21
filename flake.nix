@@ -18,7 +18,7 @@
       if builtins.pathExists dir 
       then builtins.map (file: lib.removeSuffix ".nix" file) (builtins.attrNames (builtins.readDir dir))
       else [];
-
+    
     nixosHosts = getHosts ./devices/nixos;
     hmHosts = getHosts ./devices/home-manager;
 
@@ -69,7 +69,7 @@
     # =========================================================================
     # PIPELINE B: HOME MANAGER (Multi-User Containers/WSL)
     # =========================================================================
-    # This creates targets like "chadcapra@CCAP-CB-RMT-001" dynamically.
+    # This creates targets dynamically (e.g., chadcapra@penguin).
     homeConfigurations = 
       let
         # Build a flat list of { name = "user@host"; value = {...}; }
@@ -78,9 +78,19 @@
             auth = import ./lib/get-authorized-users.nix { inherit lib hostName; };
             isArm = lib.strings.hasInfix "arm" hostName;
             arch = if isArm then "aarch64-linux" else "x86_64-linux";
+            
+            # --- DECOUPLING LOGIC ---
+            # Import the device ledger file as a plain attrset to read its metadata
+            deviceMeta = import (./devices/home-manager + "/${hostName}.nix");
+            
+            # Fall back to the logical asset tag if osHostname is omitted
+            osHost = if builtins.hasAttr "osHostname" deviceMeta 
+                     then deviceMeta.osHostname 
+                     else hostName;
           in
           lib.mapAttrsToList (userKey: userData: {
-            name = "${userData.identity.username}@${hostName}";
+            # Build the target using the resolved OS hostname
+            name = "${userData.identity.username}@${osHost}";
             value = home-manager.lib.homeManagerConfiguration {
               pkgs = nixpkgs.legacyPackages.${arch};
               extraSpecialArgs = { inherit inputs; };
