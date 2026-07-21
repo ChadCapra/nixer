@@ -99,8 +99,29 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
 
 *Close and reopen your terminal after this finishes.*
 
-#### Step 2: Fix SSL Certificates
-*ChromeOS containers have SSL paths that the isolated Nix Daemon cannot see. We must manually map Nix's own certificate bundle to the Daemon.*
+#### Step 2: Enable Flakes
+Turn on the modern Nix command features.
+
+ ```bash
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+```
+
+#### Step 3: Verify Connectivity (and Fix SSL Certificates if necessary)
+
+Verify that the Nix daemon can securely communicate with the outside world:
+
+```bash
+nix store info --store https://cache.nixos.org
+```
+
+**If command succeeds (i.e. output = `"Store URL: https://cache.nixos.org"`):** Proceed to Step 4.
+
+**If command fails with SSL error:** Expand the troubleshooting section below before continuing.
+
+<details>
+<summary>⚠️ Troubleshooting: Fix SSL Certificates (Legacy Containers)</summary>
+*Older ChromeOS containers have SSL paths that the isolated Nix Daemon cannot see. We must manually map the certificate bundle.*
 
 1.  **Install Certificates:** Download the cert bundle into your user profile.
     ```bash
@@ -127,14 +148,7 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
     sudo systemctl daemon-reload
     sudo systemctl restart nix-daemon
     ```
-
-#### Step 3: Enable Flakes
-Turn on the modern Nix command features.
-
- ```bash
-mkdir -p ~/.config/nix
-echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-```
+</details>
 
 #### Step 4: Clone the Repo
 *If `git` is missing, we use Nix to install it temporarily.*
