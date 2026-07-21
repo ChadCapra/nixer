@@ -55,7 +55,7 @@
               imports = (map (role: ./modules/${role}.nix) d.roles) ++ [ ./lib/options.nix ];
               home.username = d.identity.username;
               home.homeDirectory = "/home/${d.identity.username}";
-              home.stateVersion = "25.11";
+              home.stateVersion = "26.05";
 
               # THE BRIDGE: Pass the pure data into the module options
               nixer.user.name = d.identity.name;
@@ -100,7 +100,7 @@
                   imports = (map (role: ./modules/${role}.nix) userData.roles) ++ [ ./lib/options.nix ];
                   home.username = userData.identity.username;
                   home.homeDirectory = "/home/${userData.identity.username}";
-                  home.stateVersion = "25.11";
+                  home.stateVersion = "26.05";
 
                   # THE BRIDGE: Pass the pure data into the module options
                   nixer.user.name = userData.identity.name;

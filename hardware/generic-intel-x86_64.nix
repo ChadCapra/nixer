@@ -1,7 +1,7 @@
 { lib, ... }:
 
 {
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  
-  # Hardware is managed by the host OS.
+  # Architecture is explicitly injected by flake.nix during Home Manager evaluation.
+  # No kernel modules or bootloaders are declared here.
+  # The host OS (e.g., ChromeOS or Debian) manages the physical hardware.
 }
