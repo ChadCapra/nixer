@@ -169,7 +169,7 @@ git -v
 
 </details>
 
-Clone via HTTPS: (We use HTTPS so you don't need SSH keys yet).
+Clone via HTTPS (We use HTTPS so you don't need SSH keys yet):
 
 ```bash
 git clone https://github.com/ChadCapra/nixer.git ~/nixer
