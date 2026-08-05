@@ -2,9 +2,10 @@
   description = "The Nixer System";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Pin core package streams strictly to the 26.05 release cycle
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -58,6 +59,9 @@
           home-manager.nixosModules.default
           ({ pkgs, ... }: {
             networking.hostName = d.hostName;
+            
+            # Enforce the OS state boundaries to 26.05
+            system.stateVersion = "26.05";
 
             users.users = builtins.mapAttrs (uKey: uData: {
               isNormalUser = true;
