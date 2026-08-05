@@ -69,15 +69,11 @@
     # =========================================================================
     # PIPELINE B: HOME MANAGER (Multi-User Containers/WSL)
     # =========================================================================
-    # This creates targets dynamically (e.g., chadcapra@penguin).
     homeConfigurations = 
       let
-        # Build a flat list of { name = "user@host"; value = {...}; }
         allConfigs = lib.flatten (map (hostName: 
           let 
             auth = import ./lib/get-authorized-users.nix { inherit lib hostName; };
-            isArm = lib.strings.hasInfix "arm" hostName;
-            arch = if isArm then "aarch64-linux" else "x86_64-linux";
             
             # --- DECOUPLING LOGIC ---
             # Import the device ledger file as a plain attrset to read its metadata
@@ -87,9 +83,13 @@
             osHost = if builtins.hasAttr "osHostname" deviceMeta 
                      then deviceMeta.osHostname 
                      else hostName;
+            
+            # Read architecture from the asset ledger, default to x86_64-linux
+            arch = if builtins.hasAttr "hostPlatform" deviceMeta
+                   then deviceMeta.hostPlatform
+                   else "x86_64-linux";
           in
           lib.mapAttrsToList (userKey: userData: {
-            # Build the target using the resolved OS hostname
             name = "${userData.identity.username}@${osHost}";
             value = home-manager.lib.homeManagerConfiguration {
               pkgs = nixpkgs.legacyPackages.${arch};
