@@ -63,6 +63,9 @@
             # Enforce the OS state boundaries to 26.05
             system.stateVersion = "26.05";
 
+            # Global NixOS permission for proprietary components
+            nixpkgs.config.allowUnfree = true;
+
             users.users = builtins.mapAttrs (uKey: uData: {
               isNormalUser = true;
               description = uData.identity.name;
@@ -94,11 +97,17 @@
       let
         auth = import ./lib/get-authorized-users.nix { inherit lib; hostName = d.hostName; };
         osHost = if d.host.osId != null then d.host.osId else d.hostName;
+        
+        # Instantiate a custom unfree-enabled package set specifically for this architecture pass
+        unfreePkgs = import nixpkgs {
+          system = d.arch;
+          config.allowUnfree = true;
+        };
       in
       lib.mapAttrsToList (userKey: userData: {
         name = "${userData.identity.username}@${osHost}";
         value = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.${d.arch};
+          pkgs = unfreePkgs;
           extraSpecialArgs = { inherit inputs; };
           modules = [
             ./lib/options.nix
