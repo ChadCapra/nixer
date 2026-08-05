@@ -41,8 +41,8 @@
       name = lib.mkOption { type = lib.types.str; default = "Unknown"; };
       email = lib.mkOption { type = lib.types.str; default = "unknown@example.com"; };
       dotfiles = lib.mkOption { 
-        type = lib.types.path; 
-        description = "Absolute path to the dotfiles source."; 
+        type = lib.types.str; # Changed from lib.types.path to prevent Nix store coercion
+        description = "Absolute string path to the live dotfiles source."; 
       };
     };
   };
