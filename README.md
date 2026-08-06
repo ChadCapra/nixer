@@ -6,24 +6,26 @@ This repository manages the configuration for my entire digital life, unifying m
 
 Choose your path based on the machine you are setting up.
 
-# Option A: Fresh NixOS Installation ("Scorched Earth")
+---
+
+### Option A: Fresh NixOS Installation ("Scorched Earth")
 
 This guide outlines the steps for a complete wipe and fresh installation of NixOS, ensuring a clean partition table and human-readable filesystem labels.
 
-### 1. Prepare Boot Media
+**1. Prepare Boot Media**
 * Flash a USB drive with the latest NixOS ISO.
 * **BIOS Settings:** Ensure "Secure Boot" is disabled in your BIOS/UEFI settings before proceeding.
 
-### 2. Launch Installer
+**2. Launch Installer**
 * Boot from the USB drive.
 * Connect to Wi-Fi/Ethernet.
 * Launch the **NixOS Installer** from the desktop.
 
-### 3. Configure Basics
+**3. Configure Basics**
 * Follow the wizard for Language, Region, Keyboard, and User setup.
 * **Stop** when you reach the **Partitions** screen.
 
-### 4. Manual Partitioning
+**4. Manual Partitioning**
 Select **Manual Partitioning** and create a **New Partition Table (GPT)**. Create the following two partitions exactly as described:
 
 | Partition | Size | File System | Label | Mount Point | Flags |
@@ -33,28 +35,28 @@ Select **Manual Partitioning** and create a **New Partition Table (GPT)**. Creat
 
 > **Note:** Setting the "Label" in the installer saves you from doing it manually in the terminal later.
 
-### 5. Install & Restart
+**5. Install & Restart**
 * Complete the wizard and let the installation finish.
 * **Remove the USB drive** when prompted.
 * Restart the machine.
 
-### 6. Login & Setup
+**6. Login & Clone**
 * Log in to your fresh NixOS installation.
 * Open a terminal.
-* Clone your Nix configuration repository (ensure `git` is installed or use `nix-shell -p git`):
-  ```bash
-  git clone https://github.com/ChadCapra/nixer.git ~/nixer
-  ```
-
-### 7. Import Hardware Config
-Copy the auto-generated hardware configuration into your repository (replacing the placeholder):
-
+* Clone your Nix configuration repository (NixOS includes `git` in the installation environment):
 ```bash
-cp /etc/nixos/hardware-configuration.nix ~/nixer/hosts/t14/hardware.nix
+git clone https://github.com/ChadCapra/nixer.git ~/nixer
 ```
 
-### 8. Update to File System Labels
-Open your new `hardware.nix` file. You will see hard-to-read UUIDs for your file systems. Replace them with the labels you created in Step 4.
+**7. Import Hardware Config**
+Copy the auto-generated hardware configuration into your repository (replacing the placeholder).
+```bash
+cp /etc/nixos/hardware-configuration.nix ~/nixer/devices/ACME-LT-HQ-001.nix
+```
+*(Note: Rename the file to match your actual device's logical ID).*
+
+**8. Update to File System Labels**
+Open your new hardware file. Replace the hard-to-read UUIDs for your file systems with the labels you created in Step 4.
 
 **Find:**
 ```nix
@@ -64,157 +66,73 @@ fileSystems."/boot" = { device = "/dev/disk/by-uuid/XXXX-XXXX"; ... };
 
 **Replace with:**
 ```nix
-fileSystems."/" = {
-  device = "/dev/disk/by-label/nixos";
-  ...
-};
-
-fileSystems."/boot" = {
-  device = "/dev/disk/by-label/BOOT";
-  ...
-};
+fileSystems."/" = { device = "/dev/disk/by-label/nixos"; ... };
+fileSystems."/boot" = { device = "/dev/disk/by-label/BOOT"; ... };
 ```
 
-### 9. Rebuild System
-Apply your flake configuration to finalize the setup:
-
+**9. Execute the Nixer Engine**
+Run the native setup command to compile your system constraints and activate your profile.
 ```bash
-# Navigate to your flake directory
-cd ~/nixer
-
-# Rebuild (replace 't14' with your actual hostname)
-sudo nixos-rebuild switch --flake .#t14
+~/nixer/bin/nixer setup
 ```
 
+---
 
-### Option B: Chromebook / Non-NixOS
-*For setting up the 'penguin' container on ChromeOS.*
+### Option B: Chromebook / Non-NixOS (Guest Environments)
 
-#### Step 1: Install Nix
-Open the terminal and run the standard installer in Daemon mode.
+Use this method for fresh guest OS environments (ChromeOS Crostini, WSL, Ubuntu) to establish the system without polluting the host package manager.
 
+**1. Install the Nix Package Manager**
 ```bash
-sh <(curl -L https://nixos.org/nix/install) --daemon
+sh <(curl -L https://nixos.org/nix/install --daemon
 ```
+*(Note: Close and reopen your terminal after this finishes so your shell recognizes the `nix` command).*
 
-*Close and reopen your terminal after this finishes.*
-
-#### Step 2: Enable Flakes
-Turn on the modern Nix command features.
-
- ```bash
-mkdir -p ~/.config/nix
-echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-```
-
-#### Step 3: Verify Connectivity (and Fix SSL Certificates if necessary)
-
-Verify that the Nix daemon can securely communicate with the outside world:
-
+**2. Clone the Repository Ephemerally**
+Use Nix to temporarily download Git, clone the repository, and vanish without leaving a trace:
 ```bash
-nix store info --store https://cache.nixos.org
+nix shell nixpkgs#git -c git clone https://github.com/ChadCapra/nixer.git ~/nixer
 ```
 
-**If command succeeds (i.e. output = `"Store URL: https://cache.nixos.org"`):** Proceed to Step 4.
-
-**If command fails with SSL error:** Expand the troubleshooting section below before continuing.
-
-<details>
-<summary>⚠️ Troubleshooting: Fix SSL Certificates (Legacy Containers)</summary>
-
-*Older ChromeOS containers have SSL paths that the isolated Nix Daemon cannot see. We must manually map the certificate bundle.*
-
-1.  **Install Certificates:** Download the cert bundle into your user profile.
-    ```bash
-    nix-env -iA nixpkgs.cacert
-    ```
-2.  **Get the Path:** Run this to find where the certs live. **Copy the output.**
-    ```bash
-    readlink -f ~/.nix-profile/etc/ssl/certs/ca-bundle.crt
-    ```
-3.  **Configure Daemon:** Create the service override file.
-    ```bash
-    sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
-    sudo nano /etc/systemd/system/nix-daemon.service.d/override.conf
-    ```
-4.  **Paste & Save:** Paste the following, replacing `YOUR_PATH_HERE` with the path you copied in Step 2.
-    ```ini
-    [Service]
-    Environment="NIX_SSL_CERT_FILE=YOUR_PATH_HERE"
-    Environment="CURL_CA_BUNDLE=YOUR_PATH_HERE"
-    ```
-    *(Save with `Ctrl+O`, Exit with `Ctrl+X`)*
-5.  **Apply Fix:**
-    ```bash
-    sudo systemctl daemon-reload
-    sudo systemctl restart nix-daemon
-    ```
-</details>
-
-#### Step 4: Clone the Repo
-
-Check if `git` is installed
+**3. Execute the Nixer Engine**
+Run the native setup command to compile your system constraints, bridge your environment (GPU, SSL), and activate your profile.
 ```bash
-git -v
-```
-
-<details>
-<summary>**⚠️ If: git: command not found**</summary>
-
->*Install git using nix-env.*
->
-> ```bash
->nix-env -iA nixpkgs.git
->```
-
-</details>
-
-Clone via HTTPS (We use HTTPS so you don't need SSH keys yet):
-
-```bash
-git clone https://github.com/ChadCapra/nixer.git ~/nixer
-```
-
-
-#### Step 5: Bootstrap the System
-This command downloads Home Manager and uses it to install itself and your entire configuration.
-
-```bash
-cd ~/nixer
-nix run home-manager/master -- switch --flake .#penguin
+~/nixer/bin/nixer setup
 ```
 
 ---
 
 ## 🔐 Post-Installation: SSH Setup
+
 Now that your system is running, you should set up SSH keys so you can push changes back to GitHub.
 
 1.  **Generate a new key** (if you don't have one):
-    ```bash
-    ssh-keygen -t ed25519 -C "chadcapra@gmail.com"
-    ```
+```bash
+ssh-keygen -t ed25519 -C "chadcapra@gmail.com"
+```
 2.  **Add to GitHub:** Copy the key and add it to your GitHub Settings -> SSH Keys.
-    ```bash
-    cat ~/.ssh/id_ed25519.pub
-    ```
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
 3.  **Switch Repo to SSH:**
-    ```bash
-    cd ~/nixer
-    git remote set-url origin git@github.com:ChadCapra/nixer.git
-    ```
+```bash
+cd ~/nixer
+git remote set-url origin git@github.com:ChadCapra/nixer.git
+```
 
 ---
 
 ## 🛠 Usage
 
-This system uses a smart alias to handle updates on any machine.
-
-* **Update System:**
+This system uses a unified CLI to manage the entire infrastructure lifecycle. Because the `~/nixer/bin` path is automatically injected into your environment, you can run these commands from anywhere.
 
 ```bash
-rebuild
+# 1. Apply configuration changes (Runs nixos-rebuild or home-manager dynamically)
+nixer rebuild
+
+# 2. Delete old system generations and optimize disk space
+nixer sweep
+
+# 3. List all declaratively managed packages currently installed
+nixer inventory
 ```
-
-*On T14: Automatically runs `nixos-rebuild`*
-
-*On Chromebook: Automatically runs `home-manager switch`*

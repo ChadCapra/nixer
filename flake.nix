@@ -14,6 +14,10 @@
   let
     lib = nixpkgs.lib;
 
+    # Parse the version configuration file
+    nixerConfig = builtins.fromJSON (builtins.readFile ./nixer.json);
+    targetVersion = nixerConfig.version;
+
     # 1. Discover all hardware ledgers in the unified devices directory
     deviceFiles = if builtins.pathExists ./devices
                   then builtins.filter (lib.strings.hasSuffix ".nix") (builtins.attrNames (builtins.readDir ./devices))
@@ -60,8 +64,8 @@
           ({ pkgs, ... }: {
             networking.hostName = d.hostName;
             
-            # Enforce the OS state boundaries to 26.05
-            system.stateVersion = "26.05";
+            # Enforce the OS state boundaries to "targetVersion" (pulled from nixer.json)
+            system.stateVersion = targetVersion;
 
             # Global NixOS permission for proprietary components
             nixpkgs.config.allowUnfree = true;
