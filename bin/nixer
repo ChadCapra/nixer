@@ -53,21 +53,28 @@ cmd_setup() {
     fi
     log_success "Verified $(nix --version)"
 
-    # Handle Legacy SSL Issues (ChromeOS)
-    if ! nix store info https://cache.nixos.org &>/dev/null; then
-        log_warn "SSL Certificate routing failed."
-        log_info "Applying legacy SSL certificate patch to Nix Daemon..."
+    # 1. Enable Flakes and nix-command FIRST
+    mkdir -p ~/.config/nix
+    if ! grep -q "experimental-features" ~/.config/nix/nix.conf 2>/dev/null; then
+        log_info "Enabling Nix Flakes..."
+        echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+    fi
 
+    # 2. Handle Legacy SSL Issues (ChromeOS)
+    # Using the correct 'info' command with inline flags to guarantee it executes
+    if ! nix --extra-experimental-features nix-command store info https://cache.nixos.org &>/dev/null; then
+        log_warn "Nix cache unreachable. Applying legacy SSL certificate patch..."
+        
         nix-env -iA nixpkgs.cacert
         CERT_PATH=$(readlink -f ~/.nix-profile/etc/ssl/certs/ca-bundle.crt)
-
+        
         sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
         echo -e "[Service]\nEnvironment=\"NIX_SSL_CERT_FILE=$CERT_PATH\"\nEnvironment=\"CURL_CA_BUNDLE=$CERT_PATH\"" | sudo tee /etc/systemd/system/nix-daemon.service.d/override.conf >/dev/null
-
+        
         sudo systemctl daemon-reload
         sudo systemctl restart nix-daemon
-
-        if nix store info https://cache.nixos.org &>/dev/null; then
+        
+        if nix --extra-experimental-features nix-command store info https://cache.nixos.org &>/dev/null; then
             log_success "SSL Certificates bridged successfully."
         else
             log_warn "SSL patch applied, but connection still failed. Setup may halt."
@@ -76,17 +83,11 @@ cmd_setup() {
         log_success "Nix Daemon SSL connectivity verified."
     fi
 
-    # Ensure Flakes are enabled
-    mkdir -p ~/.config/nix
-    if ! grep -q "experimental-features" ~/.config/nix/nix.conf 2>/dev/null; then
-        echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-    fi
-
     # --------------------------------------------------------------------------
     log_step "PHASE 2: System Compilation"
     # --------------------------------------------------------------------------
     cd "$FLAKE_DIR" || { log_warn "Repository not found at $FLAKE_DIR"; exit 1; }
-
+    
     sync_versions
     log_info "Targeting Nixer Engine v${NIXER_VERSION}"
 
@@ -115,6 +116,7 @@ cmd_setup() {
     fi
 
     export PATH="$HOME/.nix-profile/bin:$HOME/nixer/bin:$PATH"
+    echo ""
     log_success "Setup complete! The Nixer environment is fully active."
 }
 
