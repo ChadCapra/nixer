@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+
+# ==============================================================================
+# THE NIXER SYSTEM CLI
+# ==============================================================================
+
+TARGET="${USER}@$(hostname)"
+FLAKE_DIR="$HOME/nixer"
+
+# Output formatting
+C_RESET='\033[0m'
+C_INFO='\033[1;34m'
+C_SUCCESS='\033[1;32m'
+C_WARN='\033[1;33m'
+C_PROMPT='\033[1;35m'
+
+log_info() { echo -e "${C_INFO}==>${C_RESET} $1"; }
+log_success() { echo -e "${C_SUCCESS}==>${C_RESET} $1"; }
+log_warn() { echo -e "${C_WARN}==>${C_RESET} $1"; }
+log_step() { echo -e "\n${C_INFO}--- $1 ---${C_RESET}"; }
+
+is_nixos() {
+    [ -f "/etc/NIXOS" ]
+}
+
+# ==============================================================================
+# COMMAND: SETUP
+# ==============================================================================
+cmd_setup() {
+    echo -e "${C_SUCCESS}🚀 Bootstrapping The Nixer System${C_RESET}"
+
+    # --------------------------------------------------------------------------
+    log_step "PHASE 1: Nix Package Manager"
+    # --------------------------------------------------------------------------
+    if ! command -v nix &> /dev/null; then
+        log_info "Nix is not installed. Initiating multi-user daemon installation..."
+        sh <(curl -L https://nixos.org/nix/install) --daemon
+
+        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+            source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+        fi
+    else
+        NIX_VERSION=$(nix --version)
+        log_success "Nix is already installed: $NIX_VERSION"
+        log_warn "If you wish to change your Nix version, press Ctrl+C now and run: sudo nix upgrade-nix"
+        echo -e "${C_PROMPT}"
+        read -p "Press [Enter] to continue with the current version..." -r
+        echo -e "${C_RESET}"
+    fi
+
+    # Ensure Flakes are enabled
+    mkdir -p ~/.config/nix
+    if ! grep -q "experimental-features" ~/.config/nix/nix.conf 2>/dev/null; then
+        log_info "Enabling Nix Flakes and experimental features..."
+        echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+    fi
+
+    # --------------------------------------------------------------------------
+    log_step "PHASE 2: Repository Clone"
+    # --------------------------------------------------------------------------
+    if [ -d "$FLAKE_DIR" ]; then
+        log_success "Nixer repository already exists at $FLAKE_DIR."
+    else
+        log_info "Cloning repository..."
+        if command -v git &> /dev/null; then
+            git clone https://github.com/ChadCapra/nixer.git "$FLAKE_DIR"
+        else
+            log_info "Native git not found. Using ephemeral Nix shell to clone..."
+            nix shell nixpkgs#git -c git clone https://github.com/ChadCapra/nixer.git "$FLAKE_DIR"
+        fi
+    fi
+
+    # --------------------------------------------------------------------------
+    log_step "PHASE 3: System Compilation"
+    # --------------------------------------------------------------------------
+    cd "$FLAKE_DIR" || exit
+    if is_nixos; then
+        log_info "Detected bare-metal NixOS. Initiating system rebuild for $(hostname)..."
+        sudo nixos-rebuild switch --flake .#"$(hostname)"
+    else
+        log_info "Detected guest environment. Initiating Home Manager profile switch for $TARGET..."
+        nix run home-manager/release-26.05 -- switch --flake .#"$TARGET"
+    fi
+
+    # --------------------------------------------------------------------------
+    log_step "PHASE 4: Post-Install Configuration"
+    # --------------------------------------------------------------------------
+
+    # 1. GPU Bridging (Only applies to non-NixOS environments)
+    if ! is_nixos; then
+        # Search the Nix store for the generated GPU setup script
+        GPU_SCRIPT=$(ls /nix/store/*-non-nixos-gpu/bin/non-nixos-gpu-setup 2>/dev/null | head -n 1)
+
+        if [ -n "$GPU_SCRIPT" ]; then
+            log_warn "A standalone GPU bridging script was generated during compilation."
+            log_info "This is required if you plan to run graphical applications (e.g., Chrome, OBS) inside this guest container."
+            echo -e "${C_PROMPT}"
+            read -p "Would you like to bridge the host GPU drivers now? (y/N): " -r bridge_gpu
+            echo -e "${C_RESET}"
+
+            if [[ "$bridge_gpu" =~ ^[Yy]$ ]]; then
+                log_info "Executing GPU setup..."
+                sudo "$GPU_SCRIPT"
+                log_success "GPU drivers bridged successfully."
+            else
+                log_info "Skipping GPU setup."
+            fi
+        fi
+    fi
+
+    # 2. Path Injection
+    export PATH="$HOME/.nix-profile/bin:$HOME/nixer/bin:$PATH"
+
+    echo ""
+    log_success "Setup complete! The Nixer environment is fully active."
+}
+
+# ==============================================================================
+# COMMAND: REBUILD
+# ==============================================================================
+cmd_rebuild() {
+    log_info "Rebuilding System Configuration..."
+    cd "$FLAKE_DIR" || exit
+
+    if is_nixos; then
+        sudo nixos-rebuild switch --flake .#"$(hostname)"
+    else
+        home-manager switch --flake .#"$TARGET"
+    fi
+}
+
+# ==============================================================================
+# COMMAND: SWEEP
+# ==============================================================================
+cmd_sweep() {
+    log_info "Sweeping Nix Garbage and Optimizing Store..."
+
+    nix-collect-garbage -d
+
+    if is_nixos; then
+        sudo nix-collect-garbage -d
+        sudo nix-store --optimize
+    else
+        sudo /nix/var/nix/profiles/default/bin/nix-collect-garbage -d
+        sudo /nix/var/nix/profiles/default/bin/nix-store --optimize
+    fi
+
+    log_success "System optimized and legacy generations cleared."
+}
+
+# ==============================================================================
+# COMMAND: INVENTORY
+# ==============================================================================
+cmd_inventory() {
+    log_info "Managed Packages Currently Installed:"
+
+    if is_nixos; then
+        nix-store -q --requisites /run/current-system | cut -d- -f2- | sort -u
+    else
+        home-manager packages | awk '{print $1}' | sort
+    fi
+}
+
+# ==============================================================================
+# ROUTER
+# ==============================================================================
+case "$1" in
+    setup) cmd_setup ;;
+    rebuild) cmd_rebuild ;;
+    sweep) cmd_sweep ;;
+    inventory) cmd_inventory ;;
+    *)
+        echo "Usage: nixer {setup|rebuild|sweep|inventory}"
+        echo ""
+        echo "Commands:"
+        echo "  setup      Bootstrap the system (Install Nix, clone repo, initial build)"
+        echo "  rebuild    Apply configuration changes"
+        echo "  sweep      Delete old generations and optimize the Nix store"
+        echo "  inventory  List installed packages"
+        exit 1
+        ;;
+esac
