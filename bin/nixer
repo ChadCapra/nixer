@@ -137,20 +137,42 @@ cmd_rebuild() {
 }
 
 # ==============================================================================
-# COMMAND: SWEEP & INVENTORY
+# COMMAND: SWEEP & SWEEP-FULL
 # ==============================================================================
-cmd_sweep() {
-    log_info "Sweeping Nix Garbage and Optimizing Store..."
-    nix-collect-garbage -d
+execute_sweep() {
+    local keep_drv=$1
+    local keep_out=$2
+
+    log_info "Sweeping Nix Garbage (keep-derivations=$keep_drv, keep-outputs=$keep_out)..."
+
+    # 1. Clear local user profile generations
+    nix-collect-garbage -d --option keep-derivations "$keep_drv" --option keep-outputs "$keep_out"
+
+    # 2. Clear system/daemon generations and optimize disk
     if is_nixos; then
-        sudo nix-collect-garbage -d && sudo nix-store --optimize
+        sudo nix-collect-garbage -d --option keep-derivations "$keep_drv" --option keep-outputs "$keep_out"
+        sudo nix-store --optimize
     else
-        sudo /nix/var/nix/profiles/default/bin/nix-collect-garbage -d
+        sudo /nix/var/nix/profiles/default/bin/nix-collect-garbage -d --option keep-derivations "$keep_drv" --option keep-outputs "$keep_out"
         sudo /nix/var/nix/profiles/default/bin/nix-store --optimize
     fi
+    
     log_success "System optimized."
 }
 
+cmd_sweep() {
+    # Safe sweep: Deletes old generations but preserves current build dependencies for offline rebuilds
+    execute_sweep true true
+}
+
+cmd_sweep_full() {
+    # Aggressive sweep: Deletes old generations AND current build dependencies for maximum space recovery
+    execute_sweep false false
+}
+
+# ==============================================================================
+# COMMAND: INVENTORY
+# ==============================================================================
 cmd_inventory() {
     log_info "Managed Packages Currently Installed:"
     if is_nixos; then
@@ -167,9 +189,17 @@ case "$1" in
     setup) cmd_setup ;;
     rebuild) cmd_rebuild ;;
     sweep) cmd_sweep ;;
+    sweep-full) cmd_sweep_full ;;
     inventory) cmd_inventory ;;
     *)
-        echo "Usage: nixer {setup|rebuild|sweep|inventory}"
+        echo "Usage: nixer {setup|rebuild|sweep|sweep-full|inventory}"
+        echo ""
+        echo "Commands:"
+        echo "  setup       Compile the system and activate profile"
+        echo "  rebuild     Apply configuration changes"
+        echo "  sweep       Delete old generations (Preserves offline rebuild capability)"
+        echo "  sweep-full  Delete old generations AND build dependencies (Maximizes disk space)"
+        echo "  inventory   List installed packages"
         exit 1
         ;;
 esac
