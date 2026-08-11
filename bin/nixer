@@ -137,37 +137,40 @@ cmd_rebuild() {
 }
 
 # ==============================================================================
-# COMMAND: SWEEP & SWEEP-FULL
+# COMMAND: SWEEP & SWEEP-FULL (Targeted Store Pruning)
 # ==============================================================================
-execute_sweep() {
-    local keep_drv=$1
-    local keep_out=$2
-
-    log_info "Sweeping Nix Garbage (keep-derivations=$keep_drv, keep-outputs=$keep_out)..."
-
-    # 1. Clear local user profile generations
-    nix-collect-garbage -d --option keep-derivations "$keep_drv" --option keep-outputs "$keep_out"
-
-    # 2. Clear system/daemon generations and optimize disk
-    if is_nixos; then
-        sudo nix-collect-garbage -d --option keep-derivations "$keep_drv" --option keep-outputs "$keep_out"
-        sudo nix-store --optimize
-    else
-        sudo /nix/var/nix/profiles/default/bin/nix-collect-garbage -d --option keep-derivations "$keep_drv" --option keep-outputs "$keep_out"
-        sudo /nix/var/nix/profiles/default/bin/nix-store --optimize
-    fi
-    
-    log_success "System optimized."
-}
-
 cmd_sweep() {
-    # Safe sweep: Deletes old generations but preserves current build dependencies for offline rebuilds
-    execute_sweep true true
+    log_info "Executing targeted sweep (Preserving offline build capability)..."
+
+    if is_nixos; then
+        # Delete old system generations, keeping the current one
+        sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations old
+    else
+        # Delete old Home Manager generations for the active user
+        nix-env --profile "$HOME/.local/state/nix/profiles/home-manager" --delete-generations old
+        nix-env --profile "$HOME/.local/state/nix/profiles/profile" --delete-generations old
+    fi
+
+    # Run a shallow collect to remove unreferenced paths without killing build dependencies
+    nix-store --gc --print-dead >/dev/null
+    log_success "Targeted sweep complete. Dead profiles removed."
 }
 
 cmd_sweep_full() {
-    # Aggressive sweep: Deletes old generations AND current build dependencies for maximum space recovery
-    execute_sweep false false
+    log_warn "Executing full store purge (This will require internet for the next rebuild)..."
+
+    # Deep purge of all user and root generations
+    nix-collect-garbage -d >/dev/null
+    
+    if is_nixos; then
+        sudo nix-collect-garbage -d
+        sudo nix-store --optimize
+    else
+        sudo /nix/var/nix/profiles/default/bin/nix-collect-garbage -d
+        sudo /nix/var/nix/profiles/default/bin/nix-store --optimize
+    fi
+
+    log_success "Global store optimized and completely cleared."
 }
 
 # ==============================================================================

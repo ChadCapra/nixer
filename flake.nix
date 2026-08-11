@@ -83,7 +83,7 @@
               imports = (map (role: ./modules/${role}.nix) uData.roles) ++ [ ./lib/options.nix ];
               home.username = uData.identity.username;
               home.homeDirectory = "/home/${uData.identity.username}";
-              home.stateVersion = "26.05";
+              home.stateVersion = targetVersion;
 
               nixer.user.name = uData.identity.name;
               nixer.user.email = uData.identity.email;
