@@ -7,11 +7,6 @@
         type = lib.types.str;
         description = "The explicit IT asset tag.";
       };
-      osId = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Literal OS hostname, if different from logicalId.";
-      };
     };
 
     taxonomy = {

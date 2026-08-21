@@ -93,7 +93,6 @@
     homeConfigurations = builtins.listToAttrs (lib.flatten (builtins.map (d:
       let
         auth = import ./lib/get-authorized-users.nix { inherit lib; hostName = d.hostName; };
-        osHost = if d.host.osId != null then d.host.osId else d.hostName;
         
         # Instantiate a custom unfree-enabled package set specifically for this architecture pass
         unfreePkgs = import nixpkgs {
@@ -102,7 +101,7 @@
         };
       in
       lib.mapAttrsToList (userKey: userData: {
-        name = "${userData.identity.username}@${osHost}";
+        name = "${userData.identity.username}@${d.hostName}";
         value = home-manager.lib.homeManagerConfiguration {
           pkgs = unfreePkgs;
           extraSpecialArgs = { inherit inputs; };

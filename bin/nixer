@@ -21,10 +21,36 @@ log_step() { echo -e "\n${C_INFO}--- $1 ---${C_RESET}"; }
 is_nixos() { [ -f "/etc/NIXOS" ]; }
 
 # ==============================================================================
+# ENVIRONMENT VALIDATION (Runs before Setup & Rebuild)
+# ==============================================================================
+verify_environment() {
+    local current_user="$USER"
+    local current_host="$(hostname)"
+
+    echo -e "${C_INFO}==> Target Environment Detected${C_RESET}"
+    echo -e "    User:     ${C_PROMPT}$current_user${C_RESET}"
+    echo -e "    Hostname: ${C_PROMPT}$current_host${C_RESET}"
+    echo ""
+    echo -e "${C_WARN}==> Required Configuration Files:${C_RESET}"
+    echo -e "    To deploy this target, the following files MUST exist:"
+    echo -e "    1. ${C_SUCCESS}users/$current_user.nix${C_RESET} (With $current_host in deployments)"
+    echo -e "    2. ${C_SUCCESS}devices/$current_host.nix${C_RESET}"
+    echo ""
+    
+    read -p "Proceed with deployment? [y/N] " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "\n${C_WARN}Deployment aborted by user.${C_RESET}"
+        exit 1
+    fi
+}
+
+# ==============================================================================
 # COMMAND: SETUP
 # ==============================================================================
 cmd_setup() {
     echo -e "${C_SUCCESS}🚀 Bootstrapping The Nixer System${C_RESET}"
+    verify_environment
 
     # --------------------------------------------------------------------------
     log_step "PHASE 1: Nix Package Manager & Connectivity"
@@ -103,6 +129,7 @@ cmd_setup() {
 # COMMAND: REBUILD
 # ==============================================================================
 cmd_rebuild() {
+    verify_environment
     log_info "Rebuilding System Configuration..."
     cd "$FLAKE_DIR" || exit
 

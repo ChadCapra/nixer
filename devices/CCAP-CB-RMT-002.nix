@@ -1,6 +1,5 @@
 {
   nixer.host.logicalId = "CCAP-CB-RMT-002";
-  nixer.host.osId = "penguin";
   
   nixer.taxonomy = {
     isa = "x86_64";
