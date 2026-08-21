@@ -91,7 +91,7 @@ curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --da
 **2. Clone the Repository Ephemerally**
 Use Nix to temporarily download Git, clone the repository, and vanish without leaving a trace:
 ```bash
-nix shell nixpkgs#git -c git clone https://github.com/ChadCapra/nixer.git ~/nixer
+nix --extra-experimental-features "nix-command flakes" shell nixpkgs#git -c git clone https://github.com/ChadCapra/nixer.git ~/nixer
 ```
 
 **3. Execute the Nixer Engine**
