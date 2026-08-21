@@ -147,7 +147,7 @@ cmd_setup() {
         log_success "Nix Daemon SSL connectivity verified."
     fi
 
-    # --------------------------------------------------------------------------
+	# --------------------------------------------------------------------------
     log_step "PHASE 2: System Compilation"
     # --------------------------------------------------------------------------
     cd "$FLAKE_DIR" || { log_warn "Repository not found at $FLAKE_DIR"; exit 1; }
@@ -157,6 +157,14 @@ cmd_setup() {
         sudo nixos-rebuild switch --flake .#"$CURRENT_HOST"
     else
         log_info "Detected guest environment. Initiating profile switch for $TARGET..."
+        
+        # --- NEW CONTEXT WARNING ---
+        echo ""
+        log_warn "NOTE ON GPU DRIVERS: Home Manager may print a warning below asking"
+        log_warn "you to manually run a /nix/store/.../non-nixos-gpu-setup script."
+        log_warn "Please IGNORE this. Nixer handles it automatically in Phase 3."
+        echo ""
+
         nix run "github:nix-community/home-manager" -- switch -b backup --flake .#"$TARGET"
     fi
 
