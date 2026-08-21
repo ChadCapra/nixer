@@ -14,10 +14,6 @@
   let
     lib = nixpkgs.lib;
 
-    # Parse the version configuration file
-    nixerConfig = builtins.fromJSON (builtins.readFile ./nixer.json);
-    targetVersion = nixerConfig.version;
-
     # 1. Discover all hardware ledgers in the unified devices directory
     deviceFiles = if builtins.pathExists ./devices
                   then builtins.filter (lib.strings.hasSuffix ".nix") (builtins.attrNames (builtins.readDir ./devices))
@@ -83,7 +79,7 @@
               imports = (map (role: ./modules/${role}.nix) uData.roles) ++ [ ./lib/options.nix ];
               home.username = uData.identity.username;
               home.homeDirectory = "/home/${uData.identity.username}";
-              home.stateVersion = targetVersion;
+              home.stateVersion = uData.identity.homeVersion;
 
               nixer.user.name = uData.identity.name;
               nixer.user.email = uData.identity.email;
@@ -120,7 +116,7 @@
               imports = (map (role: ./modules/${role}.nix) userData.roles) ++ [ ./lib/options.nix ];
               home.username = userData.identity.username;
               home.homeDirectory = "/home/${userData.identity.username}";
-              home.stateVersion = "26.05";
+              home.stateVersion = uData.identity.homeVersion;
 
               nixer.user.name = userData.identity.name;
               nixer.user.email = userData.identity.email;

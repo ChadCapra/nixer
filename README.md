@@ -84,7 +84,7 @@ Use this method for fresh guest OS environments (ChromeOS Crostini, WSL, Ubuntu)
 
 **1. Install the Nix Package Manager**
 ```bash
-sh <(curl -L https://nixos.org/nix/install --daemon
+curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
 ```
 *(Note: Close and reopen your terminal after this finishes so your shell recognizes the `nix` command).*
 

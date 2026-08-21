@@ -9,6 +9,8 @@
     executionEnvironment = "lxc_container";
   };
 
+  system.stateVersion = "26.05";
+
   imports = [
     ../os/linux-home-manager.nix
   ];

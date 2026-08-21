@@ -3,6 +3,7 @@
     name = "Chad Capra";
     username = "chadcapra";
     email = "chadcapra@gmail.com";
+    homeVersion = "26.05";
   };
 
   deployments = {

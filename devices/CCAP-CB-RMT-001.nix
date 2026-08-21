@@ -9,7 +9,8 @@
     executionEnvironment = "lxc_container";
   };
 
-  # Generic architecture files are replaced entirely by the taxonomy schema.
+  system.stateVersion = "26.05";
+
   imports = [
     ../os/linux-home-manager.nix
   ];

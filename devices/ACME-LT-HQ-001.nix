@@ -8,6 +8,8 @@
     executionEnvironment = "nixos";
   };
 
+  system.stateVersion = "26.05";
+
   # Direct hardware configuration constraints remain for bare metal control
   imports = [
     ../hardware/amd-amdgpu-x86_64.nix
