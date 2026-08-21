@@ -60,9 +60,6 @@
           ({ pkgs, ... }: {
             networking.hostName = d.hostName;
             
-            # Enforce the OS state boundaries to "targetVersion" (pulled from nixer.json)
-            system.stateVersion = targetVersion;
-
             # Global NixOS permission for proprietary components
             nixpkgs.config.allowUnfree = true;
 
@@ -116,7 +113,7 @@
               imports = (map (role: ./modules/${role}.nix) userData.roles) ++ [ ./lib/options.nix ];
               home.username = userData.identity.username;
               home.homeDirectory = "/home/${userData.identity.username}";
-              home.stateVersion = uData.identity.homeVersion;
+              home.stateVersion = userData.identity.homeVersion;
 
               nixer.user.name = userData.identity.name;
               nixer.user.email = userData.identity.email;

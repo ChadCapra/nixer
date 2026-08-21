@@ -21,23 +21,6 @@ log_step() { echo -e "\n${C_INFO}--- $1 ---${C_RESET}"; }
 is_nixos() { [ -f "/etc/NIXOS" ]; }
 
 # ==============================================================================
-# ENGINE SYNC (Reads JSON, patches Flake)
-# ==============================================================================
-sync_versions() {
-    if [ ! -f "$FLAKE_DIR/nixer.json" ]; then
-        log_warn "nixer.json not found! Falling back to 26.05."
-        NIXER_VERSION="26.05"
-    else
-        # Extract version strictly without external dependencies like jq
-        NIXER_VERSION=$(grep '"version"' "$FLAKE_DIR/nixer.json" | cut -d'"' -f4)
-    fi
-
-    # Hot-patch the flake inputs to satisfy Nix evaluation purity
-    sed -i "s/nixos-[0-9][0-9]\.[0-9][0-9]/nixos-$NIXER_VERSION/g" "$FLAKE_DIR/flake.nix"
-    sed -i "s/release-[0-9][0-9]\.[0-9][0-9]/release-$NIXER_VERSION/g" "$FLAKE_DIR/flake.nix"
-}
-
-# ==============================================================================
 # COMMAND: SETUP
 # ==============================================================================
 cmd_setup() {
@@ -87,15 +70,12 @@ cmd_setup() {
     # --------------------------------------------------------------------------
     cd "$FLAKE_DIR" || { log_warn "Repository not found at $FLAKE_DIR"; exit 1; }
 
-    sync_versions
-    log_info "Targeting Nixer Engine v${NIXER_VERSION}"
-
     if is_nixos; then
         log_info "Detected bare-metal NixOS. Initiating rebuild for $(hostname)..."
         sudo nixos-rebuild switch --flake .#"$(hostname)"
     else
         log_info "Detected guest environment. Initiating profile switch for $TARGET..."
-        nix run "home-manager/release-$NIXER_VERSION" -- switch --flake .#"$TARGET"
+        nix run "github:nix-community/home-manager" -- switch --flake .#"$TARGET"
     fi
 
     # --------------------------------------------------------------------------
@@ -125,9 +105,6 @@ cmd_setup() {
 cmd_rebuild() {
     log_info "Rebuilding System Configuration..."
     cd "$FLAKE_DIR" || exit
-
-    sync_versions
-    log_info "Targeting Nixer Engine v${NIXER_VERSION}"
 
     if is_nixos; then
         sudo nixos-rebuild switch --flake .#"$(hostname)"
