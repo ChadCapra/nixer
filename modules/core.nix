@@ -10,6 +10,14 @@
     ./apps/tmux.nix
   ];
 
+  # Enable Home Manager's bash integration to manage environment variables
+  programs.bash.enable = true;
+
+  # Universally add the nixer bin directory to the PATH for all shells
+  home.sessionPath = [
+    "$HOME/nixer/bin"
+  ];
+
   # System-wide packages that don't need dedicated modules
   home.packages = with pkgs; [
     bat
