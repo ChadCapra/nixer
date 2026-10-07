@@ -33,7 +33,5 @@
     pandoc
     devd
 	just
-	gcc
-	gnumake
   ];
 }

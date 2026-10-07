@@ -13,6 +13,9 @@ let nxr = config.nixer; in
     nodejs
     lua-language-server
     nil               # Nix LSP
+	stdenv.cc
+    gnumake
+    tree-sitter
     
     # Create system-wide executable wrappers instead of relying on shell aliases
     (writeShellScriptBin "vi" ''exec nvim "$@"'')

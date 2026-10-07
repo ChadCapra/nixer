@@ -21,19 +21,15 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    main = "nvim-treesitter.configs", -- Tells lazy exactly which module to load safely
+    main = "nvim-treesitter.configs",
     opts = {
-      -- A list of parser names, or "all"
       ensure_installed = { 
         "elixir", "eex", "heex", "svelte", 
         "nix", "lua", "bash", "markdown", "markdown_inline" 
       },
       sync_install = false,
       auto_install = true,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false,
-      },
+      highlight = { enable = true },
       indent = { enable = true },
     },
   },
