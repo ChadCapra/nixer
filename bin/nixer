@@ -148,6 +148,34 @@ cmd_setup() {
     fi
 
 	# --------------------------------------------------------------------------
+    log_step "PHASE 1.5: Collision Prevention"
+    # --------------------------------------------------------------------------
+    # Check for standard guest OS files that aren't already Nix symlinks
+    CONFLICTS=()
+    [ -f "$HOME/.bashrc" ] && [ ! -L "$HOME/.bashrc" ] && CONFLICTS+=(".bashrc")
+    [ -f "$HOME/.profile" ] && [ ! -L "$HOME/.profile" ] && CONFLICTS+=(".profile")
+
+    if [ ${#CONFLICTS[@]} -gt 0 ]; then
+        log_warn "Found existing system dotfiles: ${CONFLICTS[*]}"
+        echo "Nixer needs to take control of these to configure your shell."
+        echo "  [b] Backup (Rename them to .backup)"
+        echo "  [d] Delete (Start completely fresh)"
+        read -p "Select an option [b/d]: " -n 1 -r DOT_CHOICE
+        echo ""
+        
+        for f in "${CONFLICTS[@]}"; do
+            if [[ $DOT_CHOICE =~ ^[Dd]$ ]]; then
+                rm "$HOME/$f"
+                echo -e "${C_SUCCESS}  -> Deleted ~/$f${C_RESET}"
+            else
+                mv "$HOME/$f" "$HOME/$f.backup"
+                echo -e "${C_INFO}  -> Backed up ~/$f to ~/$f.backup${C_RESET}"
+            fi
+        done
+        echo ""
+    fi
+
+	# --------------------------------------------------------------------------
     log_step "PHASE 2: System Compilation"
     # --------------------------------------------------------------------------
     cd "$FLAKE_DIR" || { log_warn "Repository not found at $FLAKE_DIR"; exit 1; }
