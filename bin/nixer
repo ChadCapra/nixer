@@ -174,7 +174,7 @@ cmd_setup() {
 
     # 1. Idempotent GPU Bridging (No Prompts, No State Files)
     if ! is_nixos; then
-        GPU_SCRIPT=$(ls /nix/store/*-non-nixos-gpu/bin/non-nixos-gpu-setup 2>/dev/null | head -n 1)
+		GPU_SCRIPT=$(grep -ho '/nix/store/[a-z0-9]*-non-nixos-gpu/bin/non-nixos-gpu-setup' ~/.nix-profile/activate ~/.local/state/nix/profiles/home-manager/activate 2>/dev/null | head -n 1)
         if [ -n "$GPU_SCRIPT" ]; then
             log_info "Declarative GPU bridge detected. Synchronizing host drivers..."
             sudo "$GPU_SCRIPT" >/dev/null 2>&1
