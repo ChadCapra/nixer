@@ -9,7 +9,7 @@ return {
   { 'nvim-tree/nvim-tree.lua', dependencies = { 'nvim-tree/nvim-web-devicons' } },
 
   -- Fuzzy Finder
-  { 'nvim-telescope/telescope.nvim', tag = '0.1.6', dependencies = { 'nvim-lua/plenary.nvim' } },
+  { 'nvim-telescope/telescope.nvim', dependencies = { 'nvim-lua/plenary.nvim' } },
 
   -- Keymap helper
   { 'folke/which-key.nvim', opts = {} },

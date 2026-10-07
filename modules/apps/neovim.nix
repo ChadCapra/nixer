@@ -10,13 +10,23 @@ let nxr = config.nixer; in
   # 2. The Packages & Wrappers
   home.packages = with pkgs; [
     neovim
+
+    # Core build tools so Lazy and Treesitter can compile parsers (Fixes ft_to_lang crashes)
+    gcc
+    gnumake
+    unzip
+    
+    # Dependencies for Telescope and Mason (Most Mason LSPs require Node)
+    ripgrep
+    fd
     nodejs
+
+    # Fallback LSPs
     lua-language-server
     nil               # Nix LSP
-	stdenv.cc
-    gnumake
-    tree-sitter
-    
+    elixir-ls
+    svelte-language-server
+
     # Create system-wide executable wrappers instead of relying on shell aliases
     (writeShellScriptBin "vi" ''exec nvim "$@"'')
     (writeShellScriptBin "vim" ''exec nvim "$@"'')
