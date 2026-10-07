@@ -17,21 +17,29 @@ return {
   -- Icons
   { "nvim-tree/nvim-web-devicons" },
 
-  -- Tree-sitter for Syntax Highlighting
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    main = "nvim-treesitter.configs",
-    opts = {
-      ensure_installed = { 
-        "elixir", "eex", "heex", "svelte", 
-        "nix", "lua", "bash", "markdown", "markdown_inline" 
-      },
-      sync_install = false,
-      auto_install = true,
-      highlight = { enable = true },
-      indent = { enable = true },
-    },
+    config = function()
+      -- A protected call prevents Neovim from crashing if the download fails
+      local status_ok, treesitter = pcall(require, "nvim-treesitter.configs")
+      
+      if not status_ok then
+        vim.notify("Tree-sitter is missing or still downloading. Run :Lazy to check status.", vim.log.levels.WARN)
+        return
+      end
+
+      treesitter.setup({
+        ensure_installed = { 
+          "elixir", "eex", "heex", "svelte", 
+          "nix", "lua", "bash", "markdown", "markdown_inline" 
+        },
+        sync_install = false,
+        auto_install = true,
+        highlight = { enable = true },
+        indent = { enable = true },
+      })
+    end,
   },
 
   -- LSP Config (The bridge between Neovim and your Nix devShells)
