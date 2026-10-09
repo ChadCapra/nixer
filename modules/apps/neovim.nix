@@ -15,6 +15,7 @@ let nxr = config.nixer; in
     gcc
     gnumake
     unzip
+	tree-sitter
     
     # Dependencies for Telescope and Mason (Most Mason LSPs require Node)
     ripgrep

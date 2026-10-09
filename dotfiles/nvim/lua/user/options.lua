@@ -21,3 +21,23 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 -- Explicitly paste from system clipboard
 vim.keymap.set({"n", "v"}, "<leader>p", [["+p]])
 vim.keymap.set({"n", "v"}, "<leader>P", [["+p]])
+
+-- Force Neovim's native Treesitter engine to attach to Elixir files
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "elixir", "eex", "heex" },
+  callback = function()
+    pcall(vim.treesitter.start)
+  end,
+})
+
+vim.g.clipboard = {
+  name = 'OSC 52',
+  copy = {
+    ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
+    ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+  },
+  paste = {
+    ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
+    ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+  },
+}

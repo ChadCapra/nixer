@@ -3,6 +3,10 @@ local map = vim.keymap.set
 map('n', '<leader>ff', '<cmd>Telescope find_files<cr>', { desc = 'Find Files' })
 map('n', '<leader>fg', '<cmd>Telescope live_grep<cr>', { desc = 'Live Grep' })
 
+-- LSP Definitions
+map('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to Definition' })
+map('n', 'K', vim.lsp.buf.hover, { desc = 'Hover Documentation' })
+
 -- Duplicate current file (Save As in same directory)
 -- 1. Expands the directory of the current file
 -- 2. Types ":saveas <dir>/" into the command line
@@ -13,3 +17,4 @@ map('n', '<leader>cf', function()
 	local cmd = ":saveas " .. current_dir .. "/"
 	vim.api.nvim_feedkeys(cmd, "n", false)
 end, { desc = "Copy File (Same Dir)" })
+

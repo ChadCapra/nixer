@@ -27,7 +27,7 @@
     zoxide
     tldr
     nodejs
-    xsel    #may be needed on chromebook still, but figure out this later
+    xsel
 	wl-clipboard
     entr
     pandoc

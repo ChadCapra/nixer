@@ -47,7 +47,6 @@ return {
     "neovim/nvim-lspconfig",
     config = function()
       -- 1. Override default settings for specific servers
-      -- We use tbl_deep_extend to merge our custom 'cmd' with the built-in defaults safely
       vim.lsp.config.elixirls = vim.tbl_deep_extend(
         "force",
         vim.lsp.config.elixirls or {},
